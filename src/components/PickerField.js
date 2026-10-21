@@ -7,11 +7,11 @@ import Button from './Button';
 import { formatDateToDob, formatTimeTo12h } from '../utils/dateFormat';
 import { spacing, typography } from '../theme';
 
-export default function PickerField({ label, iconName, iconSet, iconColor, mode, value, onChange, maximumDate, style }) {
+export default function PickerField({ label, iconName, iconSet, iconColor, mode, value, onChange, maximumDate, large, formatValue, style }) {
   const [visible, setVisible] = useState(false);
   const [tempValue, setTempValue] = useState(value);
 
-  const displayValue = mode === 'date' ? formatDateToDob(value) : formatTimeTo12h(value);
+  const displayValue = formatValue ? formatValue(value) : mode === 'date' ? formatDateToDob(value) : formatTimeTo12h(value);
 
   const open = () => {
     setTempValue(value);
@@ -33,6 +33,7 @@ export default function PickerField({ label, iconName, iconSet, iconColor, mode,
         iconSet={iconSet}
         iconColor={iconColor}
         onPress={open}
+        large={large}
         style={style}
       />
 

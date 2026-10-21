@@ -18,7 +18,7 @@ function toHtmlTime(date) {
 
 // Shows the value in the app's format (DD/MM/YYYY, hh:mm AM) and opens the
 // browser's native picker from a hidden <input> on tap.
-export default function PickerField({ label, iconName, iconSet, iconColor, mode, value, onChange, maximumDate, style }) {
+export default function PickerField({ label, iconName, iconSet, iconColor, mode, value, onChange, maximumDate, large = false, formatValue, style }) {
   const inputRef = React.useRef(null);
 
   const handleChange = (event) => {
@@ -46,13 +46,13 @@ export default function PickerField({ label, iconName, iconSet, iconColor, mode,
     }
   };
 
-  const displayValue = mode === 'date' ? formatDateToDob(value) : formatTimeTo12h(value);
+  const displayValue = formatValue ? formatValue(value) : mode === 'date' ? formatDateToDob(value) : formatTimeTo12h(value);
 
   return (
     <View style={style}>
-      {!!label && <Text style={fieldStyles.label}>{label}</Text>}
-      <TouchableOpacity style={fieldStyles.field} activeOpacity={0.7} onPress={openPicker} accessibilityRole="button" accessibilityLabel={`${label}: ${displayValue}`}>
-        <Text style={fieldStyles.value} numberOfLines={1}>{displayValue}</Text>
+      {!!label && <Text style={[fieldStyles.label, large && fieldStyles.labelLarge]}>{label}</Text>}
+      <TouchableOpacity style={[fieldStyles.field, large && fieldStyles.fieldLarge]} activeOpacity={0.7} onPress={openPicker} accessibilityRole="button" accessibilityLabel={`${label}: ${displayValue}`}>
+        <Text style={[fieldStyles.value, large && fieldStyles.valueLarge]} numberOfLines={1}>{displayValue}</Text>
         {!!iconName && <FieldIcon name={iconName} iconSet={iconSet} color={iconColor} />}
         <input
           ref={inputRef}

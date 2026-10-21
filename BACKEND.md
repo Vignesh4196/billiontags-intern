@@ -29,8 +29,6 @@ server reports; screens use the `useJobProgress` hook.
 |---|---|---|
 | Edit my profile → Save | `settingsService.updateMyProfile` | `PATCH /me/profile` |
 | Partner profile → Save | `settingsService.updatePartnerProfile` | `PATCH /partner/profile` |
-| Permissions → Save | `settingsService.savePermissions` | `PUT /me/permissions` |
-| Language change → Confirm | `settingsService.setLanguage` | `PUT /me/language` |
 | Partner feature toggles | `partnerService.updateFeature` | `PATCH /partner/features` |
 | Invite partner / share | `partnerService.sendInvite` | `POST /partner/invites` |
 | Space disconnected → Invite new partner | `partnerService.createInviteCode` | `POST /partner/invite-code` → `{ code, link }` |
@@ -41,14 +39,9 @@ server reports; screens use the `useJobProgress` hook.
 | Restore Selected Backup | `backupService.startRestore` | `POST /backups/:id/restore` → job |
 | Generate Export Archive | `exportService.createExport` | `POST /exports` → job |
 | Download Archive | `exportService.getDownloadUrl` | `GET /exports/:id/download` → `{ url }` |
-| Deactivate workspace | `accountService.deactivateWorkspace` | `POST /workspace/deactivate` |
-| Archive preference → Save | `accountService.saveArchivePreference` | `PUT /workspace/archive-preference` |
-| Delete account → phone check | `accountService.requestDeleteOtp` | `POST /account/delete/request-otp` → `{ resendInSeconds }` |
-| Verify code | `accountService.verifyDeleteOtp` | `POST /account/delete/verify-otp` |
-| Permanently delete account | `accountService.deleteAccount` | `DELETE /account` |
 | Logout | `accountService.logout` | `POST /auth/logout` |
 | Subscription → invoices download | `subscriptionService.getInvoiceUrl` | `GET /subscription/invoices/:id/pdf` → `{ url }` |
-| Plan details → Renew Plan | `subscriptionService.renewPlan` | `POST /subscription/renew` |
+| My pro plan → Renew plan (opens the hosted payment page) | `subscriptionService.getCheckoutUrl` | `GET /subscription/checkout?plan=` → `{ url }` |
 
 Read endpoints (`GET /subscription`, `/subscription/invoices`, `/backups`) are
 stubbed in the services; when connected, load them on screen focus and store the
@@ -57,6 +50,6 @@ which currently hold the dummy data.
 
 ## After-session flows
 
-Account deletion, workspace deactivation and logout reset the navigation stack to
+Logout resets the navigation stack to
 `Login` (`resetToLogin` in `src/navigation/helpers.js`). `LoginScreen` is a
 placeholder until the auth module is designed.

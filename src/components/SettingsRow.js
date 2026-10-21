@@ -17,6 +17,8 @@ export default function SettingsRow({
   IconComponent: CustomIcon,
   title,
   subtitle,
+  subtitleStyle,
+  badgeLabel,
   valueLabel,
   selected = false,
   noIcon = false,
@@ -71,10 +73,14 @@ export default function SettingsRow({
 
       <View style={styles.textContainer}>
         <Text style={[styles.title, { fontSize: 16 * scale, lineHeight: 21 * scale }]}>{title}</Text>
-        {!!subtitle && <Text style={[styles.subtitle, { fontSize: 12 * scale, lineHeight: 16 * scale }]}>{subtitle}</Text>}
+        {!!subtitle && <Text style={[styles.subtitle, { fontSize: 12 * scale, lineHeight: 16 * scale }, subtitleStyle]}>{subtitle}</Text>}
       </View>
 
-      {isToggleRow ? (
+      {badgeLabel ? (
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{badgeLabel}</Text>
+        </View>
+      ) : isToggleRow ? (
         <Toggle value={toggleValue} onValueChange={onToggleChange} />
       ) : selected ? (
         <Ionicons name="checkmark" size={20 * scale} color={colors.textPrimary} />
@@ -129,6 +135,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+  },
+  badge: {
+    paddingHorizontal: spacing.lg - 2,
+    paddingVertical: spacing.sm - 2,
+    borderRadius: radius.sm,
+    backgroundColor: colors.successSoftBackground,
+  },
+  badgeText: {
+    fontFamily: fontFamily.bold,
+    fontSize: 14,
+    lineHeight: 18,
+    color: colors.successDeep,
   },
   valueLabel: {
     ...typography.caption,

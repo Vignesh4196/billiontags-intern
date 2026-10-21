@@ -20,6 +20,7 @@ export default function Input({
   iconName,
   iconSet,
   iconColor,
+  large = false,
   multiline,
   maxLength,
   onPress,
@@ -30,10 +31,10 @@ export default function Input({
 
   return (
     <View style={style}>
-      {!!label && <Text style={fieldStyles.label}>{label}</Text>}
+      {!!label && <Text style={[fieldStyles.label, large && fieldStyles.labelLarge]}>{label}</Text>}
 
       <FieldWrapper
-        style={[fieldStyles.field, multiline && styles.fieldMultiline]}
+        style={[fieldStyles.field, large && fieldStyles.fieldLarge, multiline && styles.fieldMultiline]}
         onPress={onPress}
         activeOpacity={onPress ? 0.7 : undefined}
       >
@@ -43,7 +44,7 @@ export default function Input({
           multiline={multiline}
           maxLength={maxLength}
           pointerEvents={onPress ? 'none' : 'auto'}
-          style={[fieldStyles.value, multiline && styles.inputMultiline]}
+          style={[fieldStyles.value, large && fieldStyles.valueLarge, multiline && styles.inputMultiline]}
           placeholderTextColor={colors.tabInactive}
           {...rest}
           editable={onPress ? false : rest.editable}
@@ -66,6 +67,20 @@ export const fieldStyles = StyleSheet.create({
     lineHeight: 16,
     color: colors.fieldLabel,
     marginBottom: spacing.xs + 2,
+  },
+  // Larger variant used by the profile form: 16px labels, 70px rounded-rectangle fields, 18px text.
+  labelLarge: {
+    fontSize: 16,
+    lineHeight: 21,
+    marginBottom: spacing.sm,
+  },
+  fieldLarge: {
+    height: 70,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.xl,
+  },
+  valueLarge: {
+    fontSize: 18,
   },
   field: {
     flexDirection: 'row',

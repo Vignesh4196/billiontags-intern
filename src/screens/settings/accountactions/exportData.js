@@ -1,10 +1,10 @@
 // Shared copy + helpers for the Data export flow.
 
 export const EXPORT_CATEGORIES = [
-  { key: 'profile', title: 'Profile & Account', description: 'Email, billing logs, preferences', shortDescription: 'Email, billing logs, preferences', records: 312 },
-  { key: 'workspace', title: 'Workspace Activity', description: 'Session logs, workspace interaction stats', shortDescription: 'Session logs, interaction stats', records: 964 },
-  { key: 'messages', title: 'Messages & Chat', description: 'Direct chats, channel notes, files', shortDescription: 'Direct chats, channel notes', records: 1847 },
-  { key: 'media', title: 'Media Files', description: 'Original resolution uploads and documents', shortDescription: 'Original resolution uploads', records: 426 },
+  { key: 'profile', title: 'My personal details', description: 'Your profile and preferences', shortDescription: 'Your profile and preferences', records: 312 },
+  { key: 'workspace', title: 'My journey & progress', description: 'Goals, habits, and tracker history', shortDescription: 'Goals, habits, and tracker history', records: 964 },
+  { key: 'messages', title: 'My journals & memories', description: 'Personal entries and saved moments', shortDescription: 'Personal entries and saved moments', records: 1847 },
+  { key: 'media', title: 'My photos & creations', description: 'Photos, outfits, mood boards, and ect', shortDescription: 'Photos, outfits, mood boards, and ect', records: 426 },
 ];
 
 export function selectedCategories(categories) {

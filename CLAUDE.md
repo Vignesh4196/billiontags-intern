@@ -37,5 +37,4 @@ src/
 
 ## Progress
 Keep a checklist in `PROGRESS.md` (group, screens done, approved yes/no). Update it after every group.
-
 - I test in the browser (Expo web, 440px wide). Make sure every screen works with react-native-web; use Platform checks for native-only features.

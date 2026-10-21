@@ -79,138 +79,12 @@ const initialState = {
       note: "We recommend enabling this for every account that stores shared memories.",
     },
   ],
-  tickets: [
-    {
-      id: '491028',
-      title: 'Billing address validation error',
-      description: "Keeps saying invalid country code when i put US.",
-      status: 'in_progress',
-      category: 'billing & payment',
-      submittedLabel: 'oct 12, 2026',
-      lastUpdatedLabel: 'Last updated: 5 mins ago',
-      thread: [
-        {
-          id: 't1-1',
-          sender: 'user',
-          text: "I'm trying to check out but the address validation fails. It says invalid country code when i submit.",
-          time: '10:24 AM',
-        },
-        {
-          id: 't1-2',
-          sender: 'agent',
-          text: "I see the issue. Our system needs the ISO two-letter country code (like 'US' or 'GB') instead of writing the full name.",
-          time: '10:31 AM',
-        },
-      ],
-    },
-    {
-      id: '489311',
-      title: 'Premium plan subscription missing',
-      description: 'Please upload your payment receipt to complete valid...',
-      status: 'needs_reply',
-      category: 'billing & payment',
-      submittedLabel: 'oct 6, 2026',
-      lastUpdatedLabel: 'Last updated: yesterday',
-      thread: [
-        {
-          id: 't2-1',
-          sender: 'user',
-          text: "I upgraded to premium yesterday but my account still shows the free plan.",
-          time: '9:02 AM',
-        },
-        {
-          id: 't2-2',
-          sender: 'agent',
-          text: 'Please upload your payment receipt so we can complete validation on our end.',
-          time: '9:40 AM',
-        },
-      ],
-    },
-    {
-      id: '473918',
-      title: 'Cannot login via Google SSO',
-      description: 'Your login authentication issue is solved.',
-      status: 'resolved',
-      category: 'account & login',
-      submittedLabel: 'sep 20, 2026',
-      lastUpdatedLabel: 'Resolved 4 days ago',
-      thread: [
-        {
-          id: 't3-1',
-          sender: 'user',
-          text: "Google sign-in keeps failing with an unknown error.",
-          time: '2:10 PM',
-        },
-        {
-          id: 't3-2',
-          sender: 'agent',
-          text: 'This has been fixed on our end. Please try signing in again — let us know if it still fails.',
-          time: '3:45 PM',
-        },
-      ],
-    },
-  ],
-  liveChat: {
-    agent: {
-      name: 'Sarah',
-      role: 'from support',
-      status: 'Active • typically responds in under 1 min',
-      online: true,
-    },
-    todayLabel: 'Today at 10:24 AM',
-    messages: [
-      {
-        id: 'c1',
-        sender: 'agent',
-        text: 'Hello! Thanks for reaching out to US today. How can i help you with your account settings or payments?',
-        time: '10:31 AM',
-      },
-      {
-        id: 'c2',
-        sender: 'user',
-        text: "Hi sarah, i'm trying to update my billing address but it keeps saying 'invalid country code'. Could you assist?",
-        time: '10:31 AM',
-      },
-      {
-        id: 'c3',
-        sender: 'agent',
-        text: 'I can definitely look into that for you. Let me check your account profile. One moment please!',
-        time: '10:31 AM',
-      },
-    ],
-  },
 };
 
 const supportSlice = createSlice({
   name: 'support',
   initialState,
   reducers: {
-    addTicket(state, action) {
-      const { category, subject, description } = action.payload;
-      const id = String(Math.floor(100000 + Math.random() * 900000));
-      state.tickets.unshift({
-        id,
-        title: subject,
-        description,
-        status: 'in_progress',
-        category,
-        submittedLabel: 'just now',
-        lastUpdatedLabel: 'Last updated: just now',
-        thread: [],
-      });
-    },
-    appendTicketMessage(state, action) {
-      const { ticketId, text } = action.payload;
-      const ticket = state.tickets.find((t) => t.id === ticketId);
-      if (ticket) {
-        ticket.thread.push({ id: `m${Date.now()}`, sender: 'user', text, time: 'Just now' });
-        ticket.lastUpdatedLabel = 'Last updated: just now';
-      }
-    },
-    appendChatMessage(state, action) {
-      const { text } = action.payload;
-      state.liveChat.messages.push({ id: `c${Date.now()}`, sender: 'user', text, time: 'Just now' });
-    },
     markFaqHelpful(state, action) {
       const { faqId, helpful } = action.payload;
       const faq = state.faqs.find((f) => f.id === faqId);
@@ -219,5 +93,5 @@ const supportSlice = createSlice({
   },
 });
 
-export const { addTicket, appendTicketMessage, appendChatMessage, markFaqHelpful } = supportSlice.actions;
+export const { markFaqHelpful } = supportSlice.actions;
 export default supportSlice.reducer;

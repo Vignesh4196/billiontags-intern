@@ -19,23 +19,8 @@ export const typography = {
     fontSize: 22,
     lineHeight: 29,
   },
-  headerSmall: {
-    fontFamily: fontFamily.semiBold,
-    fontSize: 20,
-    lineHeight: 26,
-  },
-  headerStep: {
-    fontFamily: fontFamily.semiBold,
-    fontSize: 14,
-    lineHeight: 18,
-  },
   headerSemi: {
     fontFamily: fontFamily.semiBold,
-  },
-  h1: {
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.xl,
-    color: '#1A1A1A',
   },
   heading3: {
     fontFamily: fontFamily.bold,

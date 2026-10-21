@@ -35,11 +35,25 @@ const variants = {
     borderColor: colors.errorButton,
     flat: true,
   },
+  alert: {
+    background: colors.errorText,
+    textColor: colors.white,
+    borderColor: colors.errorText,
+    flat: true,
+  },
   deleteRed: {
     background: colors.deleteRed,
     textColor: colors.white,
     borderColor: colors.deleteRed,
     flat: true,
+  },
+  // Light grey pill (Renew plan on the subscription screens).
+  softGray: {
+    background: colors.disabledButton,
+    textColor: colors.textPrimary,
+    borderColor: colors.disabledButton,
+    flat: true,
+    noDim: true,
   },
   dangerSoft: {
     background: colors.dangerSoftBackground,
@@ -68,8 +82,8 @@ export default function Button({ title, onPress, disabled = false, loading = fal
         { backgroundColor: v.background, borderColor: v.borderColor, height: 56 * scale, borderRadius: pill ? 28 * scale : radius.lg * scale },
         v.flat && styles.flat,
         style,
-        hovered && styles.hovered,
-        disabled && styles.disabled,
+        hovered && !disabled && styles.hovered,
+        disabled && !v.noDim && styles.disabled,
         pressed && styles.pressed,
       ]}
       onPress={onPress}

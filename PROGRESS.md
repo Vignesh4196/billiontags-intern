@@ -313,3 +313,215 @@ Still dummy state in `settingsSlice.notifications` (no backend). Approved: no.
 | Approved |
 |---|
 | no |
+
+## Main settings — redesigned (2026-10-14)
+
+| Screen | File | Status | Approved |
+|---|---|---|---|
+| Main settings (Profile) | src/screens/settings/profile/MainSettingsScreen.js | Rebuilt from screenshot (Figma MCP rate-limited; link node `8118-11686` not read) | yes |
+
+- Order: profile card, My partner (own card), Subscriptions / Backup & Export / Help & Support, About us
+  (Privacy policy, Service terms, Rate app, Refer to people), Logout card.
+- Routes: Subscriptions -> Subscription, Backup & Export -> AccountActions, Help & Support -> Support,
+  Logout -> LogoutConfirm. New icons: `logout-icon.png`, `backup-export-icon.png` (user-supplied 24px).
+- Removed from this screen: Notifications, App settings, Share app. Their routes still exist but have no entry point.
+
+## Profile view + edit (2026-10-14)
+
+| Screen | File | Status | Approved |
+|---|---|---|---|
+| Profile (read-only view) | src/screens/settings/profile/MyProfileScreen.js | New, from screenshot; route `MyProfile` | yes |
+| Edit profile (previous form) | src/screens/settings/profile/EditProfileScreen.js | Renamed from MyProfileScreen; route `EditProfile`, opened by the pencil in the view header | yes |
+
+- Language and interest chips now show a small "x" and are removed with a tap (`Chip` `onRemove`), also on the partner profile form.
+- View shows Birthplace as "<district>, India" and Current city from new dummy field `myProfile.currentCity`. DOB is shown "29 - May - 2002".
+- `ScreenHeader` gained a `rightElement` prop; `edit-profile-icon.png` is the user-supplied 40px pencil button.
+
+## Danger zone removed (2026-10-14)
+
+Account actions is now "Backup & Export" (System backup + Data export only, no "Backups" card title).
+Removed: Deactivate workspace, Workspace deactivated, Workspace suspended, Suspension failed, Delete account (ID verify),
+Delete account (OTP), Confirm deletion, Account deleted screens + routes; the Danger zone card and its Logout row
+(Logout now lives on Main settings); `accountService` deactivate/delete methods; `accountSlice.deactivation` /
+`setArchiveOption`; `PhraseInput` / `OtpInput` in FormControls; `account-deleted-illustration.png`; the BACKEND.md rows.
+Logout confirm / success screens are kept. Approved: yes.
+
+## Profile view — redesign (2026-10-15)
+
+`MyProfileScreen.js` updated from screenshot: header pencil button replaced by an "Edit" pill; the Invite/Connected banner
+removed; new "Our connection" card (Connected on Superbae + Connection status with green verified badge), shown only while
+connected. New icons: `connected-on-icon.png`, `connection-status-icon.png`, `verified-badge-icon.png` (user-supplied 24px).
+Removed `edit-profile-icon.png`. Approved: no.
+
+## Profile animations (2026-10-15)
+
+New `components/FadeInView.js` (fade + slide up, staggered). Profile view: avatar/fields card/Our connection fade in one after
+another; Edit button shrinks while pressed; verified badge pops in then pulses; Edit profile opens with a slide-up
+(`animation: 'slide_from_bottom'`). `Chip` pops in when it appears and shrinks away before it is removed. JS driver throughout
+(react-native-web). Approved: no.
+
+## Edit icon + discard-changes popup (2026-10-15)
+
+Profile view "Edit" button uses the user-supplied 16px pencil (`edit-pencil-icon.png`). `ProfileForm` (edit profile and partner
+profile) now shows a "Confirmation" popup when the back arrow is pressed with unsaved changes: Discard leaves, Save changes
+saves then leaves. No popup when nothing changed. Approved: no.
+
+## Edit profile + profile view re-design (2026-10-15)
+
+Edit profile (`ProfileForm`, My profile mode): "My name"; larger 16px labels and 70px rounded-rectangle fields (opt-in `large`
+prop on Input / SelectField / PickerField, so Support screens are unchanged); new "Birth place" text field (`myProfile.birthPlace`);
+Email, Bio and the invite banner removed from this mode. Partner profile keeps Email + Bio but uses the same field look.
+Profile view: Birthplace = "<birthPlace>, India"; Current city "Chennai, TN". `PartnerBanner` and the `connection` prop deleted (unused).
+Approved: no.
+
+## Profile view — connection card logic (2026-10-15)
+
+"Our connection" is always shown. "Connected on Superbae" = the user's sign-up date (`myProfile.signedUpAt`, dummy 2023-08-12), no
+longer the partner connection date. "Connection status" follows `partnerConnection.connected`: "Partner connected" + green verified badge
+(pulsing), or "Partner not connected" + grey close-circle icon. Approved: no.
+
+## Main settings → "Account & Settings" (2026-10-15)
+
+`MainSettingsScreen.js` rebuilt from screenshot: title "Account & Settings"; sections "Profile & account" (My partner with
+Active/Invite badge, Subscriptions, Help & Support), "Backup & Export" (System backup, Data export, direct rows), "A little more
+about us" (Privacy policy, Terms of service, Rate app, Invite your girls); Logout card. `SettingsRow` gained `badgeLabel` and
+`subtitleStyle`. Deleted the Backup & Export hub (`AccountActionsScreen` + route) and its row on App settings; removed
+`backup-export-icon.png`. My partner badge is "Invite" while no partner is connected. Approved: no.
+
+## My partner → Invite partner when disconnected (2026-10-15)
+
+My partner (Main settings) opens Invite partner directly while no partner is connected (was Our space); Partner settings swaps itself
+for Invite partner if reached while disconnected. Our space now has no entry point (screen and route kept). Approved: no.
+
+## Disconnect flow redesign (2026-10-15)
+
+| Screen | File | Status | Approved |
+|---|---|---|---|
+| Partner settings (Disconnect your partner?) | disconnect/DisconnectWarningScreen.js | Rebuilt from screenshot | no |
+| Delete shared data | disconnect/DeleteSyncDataScreen.js | Rebuilt from screenshot | no |
+| Add partner (was Space disconnected) | disconnect/AddPartnerScreen.js | New; also shown by My partner when no partner is connected | no |
+
+Flow: My partner -> Disconnect card -> Partner settings -> "Yes, disconnect partner" -> Delete shared data -> disconnects + deletes -> Add partner.
+"Keep us connected" / "Keep our shared space" / back abort and stay connected. Secure verification screen removed.
+Removed: DisconnectVerifyScreen, SpaceDisconnectedScreen (+ Invite new partner / Export memories / Continue alone options),
+ListCheckIcon, old couple + woman illustrations. New assets: add-partner-illustration.png (from image 2500.svg), shared-item-icon.png
+(Frame.png), broken-heart-illustration.png (from image 2500.svg; add-partner from image 2499.svg).
+New components: PopInView, PressableScale; Button variant `alert`. Animations: Add partner pop-in + fade stagger (no bobbing);
+heart pop + wiggle, red X pop; Delete card shake, bin wiggle, rows stagger, press-shrink button.
+
+## Partner profile + Edit partner profile (2026-10-15)
+
+| Screen | File | Status | Approved |
+|---|---|---|---|
+| Partner profile (view) | profile/PartnerProfileScreen.js | Rebuilt from screenshot; route `PartnerProfile` (My partner → tap Arjun's avatar) | yes |
+| Edit partner profile | profile/EditPartnerProfileScreen.js | New; route `EditPartnerProfile` (Edit profile button / name or phone row / camera badge) | yes |
+
+"Our little love story" (duration, since-date, anniversary) and the My partner "Together since" pill are all calculated from
+`profile.connectedAt`, which the edit screen's "Together since" date writes (`updatePartnerDetails`). New date helpers in dateFormat
+(`formatTogetherDuration`, `formatAnniversary`, `toIsoDate`, `formatSpacedDate`); PickerField gained `formatValue`. Partner phone is now
+`phoneCode` + `phoneNumber`. `ProfileForm` is now My-profile-only (removed the partner Email/Bio/header-check paths). Approved: no.
+
+## Connection success redesign (2026-10-15)
+
+`ourspace/ConnectionSuccessScreen.js` rebuilt: padlocks illustration (`connected-padlocks.png`), "You're officially connected!", names card,
+"Your story starts here" checklist, "Explore our shared space". Animations: padlocks pop + swing, text/card stagger, check marks pop.
+Removed the old "IT'S a MATCH" badge, couple illustration and heart overlay assets. Approved: yes.
+
+## Subscription + My pro plan (2026-10-15)
+
+| Screen | File | Status | Approved |
+|---|---|---|---|
+| Subscription | subscription/SubscriptionScreen.js | Updated from screenshot; Renew Plan enabled again (light-grey pill), opens My pro plan | no |
+| My pro plan (was Plan details) | subscription/PlanDetailsScreen.js | Rebuilt from screenshot; "Renew plan" opens the payment site via subscriptionService.getCheckoutUrl | no |
+
+Payment URL: PAYMENT_URL in services/config.js (env EXPO_PUBLIC_PAYMENT_URL; placeholder default https://superbae.app/pay). The mock renew was removed. Removed HexPattern. New icons: crown-icon.png, perk-check-icon.png.
+
+Subscription update: plan card taps open My pro plan; both Renew buttons are grey/disabled until the plan is within 10 days of renewal (`RENEW_WINDOW_DAYS`, `daysUntil` in utils/dateFormat.js); sample renewsOn is Dec 12, 2026.
+
+## Data export + Logout (2026-10-15)
+
+| Screen | File | Status | Approved |
+|---|---|---|---|
+| Data export | accountactions/DataExportScreen.js, exportData.js | Title/labels/category copy updated from screenshot | no |
+| Logout | profile/MainSettingsScreen.js (Popup) | Logout is now a "Confirmation" popup (Cancel / Logout account); LogoutConfirmScreen, its route and illustration removed | no |
+
+Logout update: the 'Session ended' (Logout success) screen was removed; Logout account now goes straight to Login ("You have been signed out.").
+
+Disconnect update: removed the 'Keep us connected' button and the Delete shared data screen (+ route, BinHalfIcon, PressableScale, shared-item-icon). 'Yes, disconnect partner' now deletes shared data and disconnects in one step, then shows Add partner.
+
+## Removed: App settings, Notifications, Privacy (2026-10-15)
+
+Not being implemented. Removed screens and routes: App settings, Language, Language change confirm, Permissions, App lock (Group 6), Notifications (Group 5) and the Privacy placeholder (Group 4), plus `PlaceholderScreen`.
+Also removed: `PrivacyShieldIcon`, `privacy-shield.svg`, auth/reqauth icons, `t1–t3.png`; the `notifications`, `language`, `permissions` and `appLock` state and actions in settingsSlice; `settingsService.savePermissions` / `setLanguage` (and their BACKEND.md rows).
+
+## Settings cleanup (2026-10-15)
+
+Removed unreachable screens + routes: Our space, Common FAQs, My tickets, New ticket, Ticket detail, Live chat.
+Removed with them: `ChatBubble`, `StatusBadge`, `ThemeHeartIcon`; `tickets` / `liveChat` state and `addTicket` / `appendTicketMessage` / `appendChatMessage` in supportSlice; `ourSpace` state + `toggleOurSpaceSetting` in settingsSlice.
+Also removed unused: `Header`, `GradientBackdrop`, `DatabaseDisableIcon`, `LockIcon`, `PartnerProfileIcon`; raw Figma SVG exports and unused PNGs in `src/assets/icons`; `setProfile`, `setPartnerProfile`, `setExportCategories`; 16 unused color tokens and typography `h1` / `headerSmall` / `headerStep`; 4 unused imports.
+
+---
+
+# AI Wardrobe ("Ara") — restart (2026-10-15)
+
+Work moves to `Fits/ai_wardrobe`. Everything except the first screen was removed so the flow can be rebuilt one screen at a time.
+
+| Screen | File | Status | Approved |
+|---|---|---|---|
+| Intro ("Hi there! I'm Ara") | Fits/ai_wardrobe/screens/IntroScreen.js | Kept | no |
+
+- Removed: Occasion, Mood, Build outfit, Crafting magic, Tips, Outfit story, Discover looks, AI drag studio, Stylist chat screens; their
+  components (MascotPrompt, OptionCard, OptionGrid, OutfitStepList, PagerDots, PieceThumb, StudioCanvas, WizardLayout), services
+  (outfitEngine, stylistChat, useTimedProgress), dummy data in `aiWardrobeSlice` (now empty) and all assets except the mascot's
+  (cloud-ara-faceless, star-orange, star-yellow).
+- Kept for reuse: Mascot, StepHeader, StepBadge, theme.js, PlaceholderScreen ("Start Styling" opens it for now).
+- Full copy of the previous build: `Fits/_backup_ai_wardrobe` (Fits/ is not in git).
+- App now opens on AI Wardrobe (`INITIAL_MODULE = 'AIWardrobe'` in src/navigation/RootNavigator.js). Settings is unchanged.
+
+## AI Wardrobe — Step 1 of 4 "Where are we going today?" (2026-10-15)
+
+| Screen | File | Status | Approved |
+|---|---|---|---|
+| Style setup (Occasion + Mood + Preference) | Fits/ai_wardrobe/screens/StyleSetupScreen.js | Built from screenshot; route `StyleSetup` (Intro → Start Styling) | no |
+
+- Restored from backup and retuned for 4 columns: `OptionCard`, `OptionGrid`; assets: occasion/mood icons, `mannequin.png`, `analyse-color.png`.
+- State: `occasion`, `mood` + `setOccasion` / `setMood` in aiWardrobeSlice. New theme token `shadow.tile`; `accentBorder` → #A855F7.
+- "Let's Style You" and both Preference rows open the placeholder until their screens are built.
+
+## AI Wardrobe — Step 2 of 4 "Build your perfect outfit from your wardrobe..." (2026-10-15)
+
+| Screen | File | Status | Approved |
+|---|---|---|---|
+| Wardrobe picks (animated wardrobe) | Fits/ai_wardrobe/screens/WardrobePicksScreen.js | Built from screenshot; route `WardrobePicks` (Step 1 → Let's Style You) | no |
+
+Animation (`components/WardrobeCloset.js`): closed wardrobe pops in + shakes → both doors swing open on their hinges
+(closed artwork split at the door gap, 3D rotateY) with a white dust burst (`SmokeBurst`) → lavender glow + twinkling sparkles
+(`MagicSparkles` / `MagicGlow`) → picked pieces fly out one by one and orbit slowly (`OrbitingItems`, 32 s per lap, any count:
+evenly spaced, sized to fit). Tap the wardrobe after it finishes to replay. Picks live in `aiWardrobeSlice.picks` (dummy 4 items,
+`setPicks` for the backend). New assets: closet-closed/open, pick-*. Tested with 4 and 9 items in Chrome at 440px.
+
+### Step 2 wardrobe animation — revised (2026-10-16)
+New order: closed wardrobe pops in → turns one full round in 3D (doors shut) → doors swing open smoothly (1.7 s eased,
+interior uncovered behind them, doors darken as they turn, open artwork takes over as they land) with dust → glow + sparkles →
+items fly out and the wardrobe switches to the empty artwork (`closet-empty.png`) → items orbit. Shake removed. Approved: no.
+### Step 2: 3D rotation removed (2026-10-16) — closed wardrobe pops in, waits briefly, then the doors open.
+### Step 2: door fix + bigger items (2026-10-16) — doors cut along their slanted outline (frame/top/feet no longer swing), closed picture stays one still image and hands over to the open picture in one short fade; orbit items up to 112px (stage 380px tall).
+
+### AI Wardrobe has 3 steps, not 4 (2026-10-21)
+Step badges now read "Step 1 of 3" / "Step 2 of 3" (StyleSetupScreen, WardrobePicksScreen; StepHeader/StepBadge defaults = 3). Step 3 ("Your outfit is ready") waits for the user's upload.
+
+### Step 2 progress bars + item cap (2026-10-21)
+Pager row is now 3 bars (2nd active). The wardrobe shows at most 8 picks (MAX_SHOWN in WardrobePicksScreen); the pill counts the shown pieces.
+
+## AI Wardrobe — Step 3 of 3 "Your outfit is ready" (2026-10-21)
+
+| Screen | File | Status | Approved |
+|---|---|---|---|
+| Outfit ready (looks carousel) | Fits/ai_wardrobe/screens/OutfitReadyScreen.js | Built from screenshot; route `OutfitReady` (Step 2 → Continue) | no |
+
+Swipeable carousel (300px cards, neighbours peek, snaps), "Look N of 3" + title/subtitle + items pill update per look; "Try another" shows the
+next look and, after the last, goes back to Step 2; "Save" stores the look (`aiWardrobe.savedLooks`) and the button turns grey "Saved ✓".
+Dummy looks in `aiWardrobeSlice.looks` (`setLooks` for the backend). New shared `ItemsCountPill` (also used on Step 2). The look photo is a crop of
+the design screenshot (assets/outfit-look-1.png, used for all 3 looks) — replace with real photos.
+Also re-applied + tested the Step 2 changes: doors start moving sooner, open picture fades in under the doors then the closed one dissolves
+(no ghost door), glow + sparkles appear together as the doors start and keep shimmering.

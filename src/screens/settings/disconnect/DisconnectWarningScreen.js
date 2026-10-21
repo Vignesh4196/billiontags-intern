@@ -1,54 +1,106 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Animated, Easing, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useDispatch } from 'react-redux';
 import ScreenHeader from '../../../components/ScreenHeader';
 import SettingsCard from '../../../components/SettingsCard';
 import Button from '../../../components/Button';
-import { colors, spacing, radius, fontFamily, typography } from '../../../theme';
+import FadeInView from '../../../components/FadeInView';
+import PopInView from '../../../components/PopInView';
+import { partnerService } from '../../../services';
+import { setPartnerConnected } from '../../../state/settingsSlice';
+import { finishFlow } from '../../../navigation/helpers';
+import { colors, spacing, radius, fontFamily } from '../../../theme';
 
-const illustration = require('../../../assets/images/disconnect-partner-illustration.png');
+const illustration = require('../../../assets/images/broken-heart-illustration.png');
+
+const SHARED_DATA = ['memories', 'plans', 'journal'];
 
 const LOSSES = [
-  'Shared notes, diaries, & drawings',
-  'Upcoming trip plans & custom calendars',
-  'Real-time mood & location sharing',
+  'No shared memories and love notes',
+  'No couple plans and special dates',
+  'No access to shared personal updates',
 ];
 
+// The heart pops in, then gives one small "heartbreak" wiggle.
+function BrokenHeart() {
+  const wiggle = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    const step = (toValue) => Animated.timing(wiggle, { toValue, duration: 90, easing: Easing.inOut(Easing.quad), useNativeDriver: false });
+    const animation = Animated.sequence([Animated.delay(450), step(1), step(-1), step(0.7), step(-0.7), step(0)]);
+    animation.start();
+    return () => animation.stop();
+  }, [wiggle]);
+
+  const rotate = wiggle.interpolate({ inputRange: [-1, 1], outputRange: ['-7deg', '7deg'] });
+
+  return (
+    <PopInView>
+      <Animated.Image
+        source={illustration}
+        style={[styles.illustration, { transform: [{ rotate }] }]}
+        resizeMode="contain"
+        accessibilityLabel="Broken heart"
+      />
+    </PopInView>
+  );
+}
+
 export default function DisconnectWarningScreen({ navigation }) {
+  const dispatch = useDispatch();
+  const [busy, setBusy] = React.useState(false);
+
+  // Disconnects the partner and clears the shared data in one step, then shows Add partner.
+  const disconnect = async () => {
+    setBusy(true);
+    try {
+      await partnerService.deleteSyncData(SHARED_DATA);
+      await partnerService.disconnect();
+      dispatch(setPartnerConnected(false));
+      finishFlow(navigation, 'DisconnectWarning', 'AddPartner');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <ScreenHeader large transparent titleStyle={typography.headerMedium} title="Account settings" onBack={() => navigation.goBack()} />
+      <ScreenHeader title="Partner settings" onBack={() => navigation.goBack()} />
 
       <View style={styles.content}>
-        <Image source={illustration} style={styles.illustration} resizeMode="contain" accessibilityLabel="Couple sitting back to back with a broken link" />
-        <Text style={styles.title}>Disconnect partner?</Text>
-        <Text style={styles.body}>Disconnecting will immediately end shared access to your SuperBae space for both of you.</Text>
+        <BrokenHeart />
 
-        <SettingsCard radiusSize={radius.lg} style={styles.card}>
-          <Text style={styles.cardTitle}>What you both lose access to:</Text>
-          {LOSSES.map((item) => (
-            <View key={item} style={styles.lossRow}>
-              <Ionicons name="close" size={18} color={colors.alertRed} />
-              <Text style={styles.lossText}>{item}</Text>
-            </View>
-          ))}
-        </SettingsCard>
+        <FadeInView delay={250} style={styles.textBlock}>
+          <Text style={styles.title}>Disconnect your partner?</Text>
+          <Text style={styles.body}>Your shared connection will end.</Text>
+        </FadeInView>
 
-        <Button
-          title="I understand, continue"
-          pill
-          onPress={() => navigation.navigate('DisconnectVerify')}
-          style={[styles.button, styles.continueButton]}
-          textStyle={styles.continueText}
-        />
-        <Button
-          title="Keep connected"
-          variant="outline"
-          pill
-          onPress={() => navigation.goBack()}
-          style={[styles.button, styles.keepButton]}
-          textStyle={styles.keepText}
-        />
+        <FadeInView delay={350} style={styles.cardWrap}>
+          <SettingsCard radiusSize={radius.lg} style={styles.card}>
+            <Text style={styles.cardTitle}>What changes after disconnecting?</Text>
+            {LOSSES.map((item, index) => (
+              <View key={item} style={styles.lossRow}>
+                <PopInView delay={550 + index * 150} from={0.2}>
+                  <Ionicons name="close" size={18} color={colors.alertRed} />
+                </PopInView>
+                <Text style={styles.lossText}>{item}</Text>
+              </View>
+            ))}
+          </SettingsCard>
+        </FadeInView>
+
+        <FadeInView delay={450} style={styles.actions}>
+          <Button
+            title="Yes, disconnect partner"
+            variant="alert"
+            pill
+            loading={busy}
+            onPress={disconnect}
+            style={styles.button}
+            textStyle={styles.buttonText}
+          />
+        </FadeInView>
       </View>
     </View>
   );
@@ -57,7 +109,7 @@ export default function DisconnectWarningScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.screenMuted,
+    backgroundColor: colors.white,
   },
   // No scrolling: the illustration shrinks (flexShrink) on short screens so everything fits.
   content: {
@@ -67,18 +119,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   illustration: {
-    width: 367,
-    maxWidth: '100%',
-    height: 248,
+    width: 140,
+    height: 132,
     flexShrink: 1,
-    marginTop: 24,
+    marginTop: 4,
+  },
+  textBlock: {
+    alignItems: 'center',
+    marginTop: 28,
   },
   title: {
-    fontFamily: fontFamily.bold,
+    fontFamily: fontFamily.semiBold,
     fontSize: 22,
     lineHeight: 28,
     color: colors.textPrimary,
-    marginTop: 24,
+    textAlign: 'center',
   },
   body: {
     fontFamily: fontFamily.regular,
@@ -86,13 +141,13 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: colors.textMuted,
     textAlign: 'center',
-    marginTop: 12,
-    paddingHorizontal: 20,
+    marginTop: 8,
+  },
+  cardWrap: {
+    alignSelf: 'stretch',
+    marginTop: 24,
   },
   card: {
-    alignSelf: 'stretch',
-    marginHorizontal: -4,
-    marginTop: 22,
     paddingHorizontal: 16,
     paddingVertical: 16,
     gap: 12,
@@ -101,42 +156,28 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.semiBold,
     fontSize: 14,
     color: colors.textPrimary,
-    marginBottom: 2,
   },
   lossRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
+    gap: spacing.lg - 2,
   },
   lossText: {
     fontFamily: fontFamily.regular,
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textMuted,
   },
-  button: {
+  actions: {
     alignSelf: 'stretch',
-    borderRadius: radius.pill,
+    gap: 12,
+    marginTop: 24,
   },
-  continueButton: {
+  button: {
     height: 64,
-    marginTop: 20,
-    backgroundColor: colors.alertRed,
-    borderColor: colors.alertRed,
+    borderRadius: 32,
   },
-  continueText: {
-    fontFamily: fontFamily.medium,
-    fontSize: 18,
-  },
-  keepButton: {
-    height: 56,
-    marginTop: 12,
-    borderColor: colors.textPrimary,
-    backgroundColor: 'transparent',
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  keepText: {
-    fontFamily: fontFamily.medium,
-    fontSize: 18,
+  buttonText: {
+    fontFamily: fontFamily.semiBold,
+    fontSize: 16,
   },
 });

@@ -5,7 +5,7 @@ import ScreenHeader from '../../../components/ScreenHeader';
 import SettingsCard from '../../../components/SettingsCard';
 import Button from '../../../components/Button';
 import { markFaqHelpful } from '../../../state/supportSlice';
-import { colors, spacing, radius, typography, fontFamily } from '../../../theme';
+import { colors, spacing, typography, fontFamily } from '../../../theme';
 
 function RichParagraph({ text, style }) {
   const parts = text.split('**');

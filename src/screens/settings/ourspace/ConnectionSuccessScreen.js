@@ -1,29 +1,46 @@
 import React from 'react';
-import { View, Text, Image, Animated, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Animated, Easing, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSelector, useDispatch } from 'react-redux';
 import ScreenHeader from '../../../components/ScreenHeader';
 import SettingsCard from '../../../components/SettingsCard';
 import Button from '../../../components/Button';
-import { useHeartbeat } from '../../../hooks/useHeartbeat';
+import FadeInView from '../../../components/FadeInView';
+import PopInView from '../../../components/PopInView';
 import { setPartnerConnected } from '../../../state/settingsSlice';
 import { exitInviteFlow } from '../../../navigation/helpers';
 import { colors, spacing, radius, fontFamily } from '../../../theme';
 
-const coupleConnectedBody = require('../../../assets/images/couple-connected-body.png');
-const coupleHeartOnly = require('../../../assets/images/couple-heart-only.png');
-
-// couple-connected-body.png is 250×205 with the drawing at (41, 47)–(209, 205).
-const ILLUSTRATION = { width: 250, height: 205, cropX: 41, cropY: 47, drawingWidth: 168, drawingHeight: 158 };
+const padlocks = require('../../../assets/images/connected-padlocks.png');
 
 const benefits = [
-  'Co-create logs, dates, and milestones together.',
-  'Instantly share live stickers and interactive status updates.',
+  'Save memories and milestones together',
+  'Plan dates and exchange notes',
+  'Let him view selected updates',
 ];
+
+// The padlocks pop in, then swing gently like two locks clicking together.
+function Padlocks() {
+  const swing = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    const step = (toValue) => Animated.timing(swing, { toValue, duration: 140, easing: Easing.inOut(Easing.quad), useNativeDriver: false });
+    const animation = Animated.sequence([Animated.delay(450), step(1), step(-1), step(0.6), step(-0.6), step(0)]);
+    animation.start();
+    return () => animation.stop();
+  }, [swing]);
+
+  const rotate = swing.interpolate({ inputRange: [-1, 1], outputRange: ['-6deg', '6deg'] });
+
+  return (
+    <PopInView>
+      <Animated.Image source={padlocks} style={[styles.padlocks, { transform: [{ rotate }] }]} resizeMode="contain" accessibilityLabel="Two padlocks locked together" />
+    </PopInView>
+  );
+}
 
 export default function ConnectionSuccessScreen({ navigation }) {
   const profile = useSelector((state) => state.settings.profile);
-  const heartTransform = useHeartbeat();
   const dispatch = useDispatch();
 
   React.useEffect(() => {
@@ -35,42 +52,42 @@ export default function ConnectionSuccessScreen({ navigation }) {
       <ScreenHeader large transparent title="" onBack={() => exitInviteFlow(navigation)} />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.matchBadge}>
-          <Text style={styles.matchBadgeText}>🎉 IT'S a MATCH!</Text>
-        </View>
+        <Padlocks />
 
-        <View style={styles.illustrationWrap}>
-          <Image source={coupleConnectedBody} style={styles.illustrationImage} />
-          <Animated.Image source={coupleHeartOnly} style={[styles.heartOverlay, { transform: heartTransform }]} resizeMode="contain" />
-        </View>
+        <FadeInView delay={250} style={styles.titleBlock}>
+          <Text style={styles.title}>You{'\u2019'}re officially connected!</Text>
+          <Text style={styles.subtitle}>Your favourite person is here</Text>
+        </FadeInView>
 
-        <Text style={styles.connectedTitle}>Connected!</Text>
+        <FadeInView delay={380} style={styles.cardWrap}>
+          <SettingsCard radiusSize={radius.xl} style={styles.spaceCard}>
+            <Text style={styles.spaceLabel}>Your little space together</Text>
+            <Text style={styles.spaceNames}>{profile.user.name} & {profile.partner.name}</Text>
+          </SettingsCard>
+        </FadeInView>
 
-        <SettingsCard radiusSize={radius.xl} style={styles.welcomeCard}>
-          <Text style={styles.welcomeLabel}>Welcome to your new Haven</Text>
-          <Text style={styles.welcomeTitle}>
-            {profile.user.name} & {profile.partner.name}'S space
-          </Text>
-        </SettingsCard>
-
-        <View style={styles.checklistSection}>
-          <Text style={styles.checklistTitle}>WHAT YOU CAN DO NOW:</Text>
-          {benefits.map((benefit) => (
+        <FadeInView delay={500} style={styles.checklistSection}>
+          <Text style={styles.checklistTitle}>Your story starts here</Text>
+          {benefits.map((benefit, index) => (
             <View key={benefit} style={styles.checklistRow}>
-              <Ionicons name="checkmark" size={18} color={colors.toggleOn} />
+              <PopInView delay={700 + index * 150} from={0.2}>
+                <Ionicons name="checkmark" size={18} color={colors.connectedBright} />
+              </PopInView>
               <Text style={styles.checklistText}>{benefit}</Text>
             </View>
           ))}
-        </View>
+        </FadeInView>
 
-        <Button
-          title="Enter shared space"
-          variant="primary"
-          onPress={() => exitInviteFlow(navigation)}
-          style={styles.enterButton}
-          textStyle={styles.enterText}
-          pill
-        />
+        <FadeInView delay={650} style={styles.actions}>
+          <Button
+            title="Explore our shared space"
+            variant="primary"
+            pill
+            onPress={() => exitInviteFlow(navigation)}
+            style={styles.enterButton}
+            textStyle={styles.enterText}
+          />
+        </FadeInView>
       </ScrollView>
     </View>
   );
@@ -86,58 +103,45 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     alignItems: 'center',
   },
-  matchBadge: {
-    height: 30,
-    justifyContent: 'center',
-    backgroundColor: colors.matchBadgeBackground,
-    borderRadius: 15,
-    paddingHorizontal: 14,
+  padlocks: {
+    width: 172,
+    height: 130,
+    marginTop: 40,
   },
-  matchBadgeText: {
+  titleBlock: {
+    alignItems: 'center',
+    marginTop: 56,
+  },
+  title: {
     fontFamily: fontFamily.bold,
-    fontSize: 13,
-    color: colors.matchBadgeText,
-  },
-  illustrationWrap: {
-    width: ILLUSTRATION.drawingWidth,
-    height: ILLUSTRATION.drawingHeight,
-    marginTop: 18,
-  },
-  illustrationImage: {
-    position: 'absolute',
-    left: -ILLUSTRATION.cropX,
-    top: -ILLUSTRATION.cropY,
-    width: ILLUSTRATION.width,
-    height: ILLUSTRATION.height,
-  },
-  heartOverlay: {
-    position: 'absolute',
-    left: 94 - ILLUSTRATION.cropX,
-    top: 52 - ILLUSTRATION.cropY,
-    width: 36,
-    height: 26,
-  },
-  connectedTitle: {
-    fontFamily: fontFamily.bold,
-    fontSize: 30,
-    lineHeight: 38,
+    fontSize: 28,
+    lineHeight: 36,
     color: colors.connectedBright,
-    marginTop: 30,
+    textAlign: 'center',
   },
-  welcomeCard: {
-    width: '100%',
+  subtitle: {
+    fontFamily: fontFamily.regular,
+    fontSize: 16,
+    lineHeight: 21,
+    color: colors.textFaint,
+    marginTop: 4,
+  },
+  cardWrap: {
+    alignSelf: 'stretch',
+    marginTop: 20,
+  },
+  spaceCard: {
     alignItems: 'center',
     paddingVertical: 18,
     gap: 6,
-    marginTop: 9,
   },
-  welcomeLabel: {
+  spaceLabel: {
     fontFamily: fontFamily.regular,
-    fontSize: 14,
-    lineHeight: 18,
+    fontSize: 13,
+    lineHeight: 17,
     color: colors.textFaint,
   },
-  welcomeTitle: {
+  spaceNames: {
     fontFamily: fontFamily.bold,
     fontSize: 20,
     lineHeight: 26,
@@ -147,20 +151,19 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     paddingHorizontal: spacing.sm,
     marginTop: 32,
-    gap: 13,
+    gap: 14,
   },
   checklistTitle: {
     fontFamily: fontFamily.semiBold,
     fontSize: 16,
     lineHeight: 20,
-    letterSpacing: 1,
     color: colors.textSecondary,
-    marginBottom: 5,
+    marginBottom: 2,
   },
   checklistRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
+    alignItems: 'center',
+    gap: 14,
   },
   checklistText: {
     flex: 1,
@@ -169,13 +172,16 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     color: colors.textSecondary,
   },
+  actions: {
+    alignSelf: 'stretch',
+    marginTop: 40,
+  },
   enterButton: {
     height: 64,
     borderRadius: radius.pill,
-    marginTop: 42,
   },
   enterText: {
-    fontFamily: fontFamily.medium,
+    fontFamily: fontFamily.semiBold,
     fontSize: 18,
   },
 });

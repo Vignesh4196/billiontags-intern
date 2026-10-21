@@ -1,6 +1,6 @@
 import { CommonActions } from '@react-navigation/native';
 
-// Clears the whole stack and lands on the login screen (after delete / deactivate / logout).
+// Clears the whole stack and lands on the login screen (after logout).
 export function resetToLogin(navigation, reason) {
   navigation.reset({ index: 0, routes: [{ name: 'Login', params: { reason } }] });
 }

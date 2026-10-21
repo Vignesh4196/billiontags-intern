@@ -3,10 +3,10 @@ import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Linking } 
 import { useSelector } from 'react-redux';
 import ScreenHeader from '../../../components/ScreenHeader';
 import SettingsCard from '../../../components/SettingsCard';
-import HexPattern from '../../../components/HexPattern';
 import Button from '../../../components/Button';
 import { subscriptionService } from '../../../services';
 import { downloadTextFile } from '../../../utils/download';
+import { daysUntil, RENEW_WINDOW_DAYS } from '../../../utils/dateFormat';
 import { colors, spacing, radius, fontFamily, typography } from '../../../theme';
 
 const subscriptionIcon = require('../../../assets/icons/subscription-icon.png');
@@ -33,6 +33,7 @@ function InvoiceRow({ invoice, onDownload, showBorder }) {
 
 export default function SubscriptionScreen({ navigation }) {
   const subscription = useSelector((state) => state.account.subscription);
+  const canRenew = daysUntil(subscription.renewsOn) <= RENEW_WINDOW_DAYS;
 
   const downloadInvoice = async (invoice) => {
     const { url } = await subscriptionService.getInvoiceUrl(invoice.id);
@@ -48,8 +49,13 @@ export default function SubscriptionScreen({ navigation }) {
       <ScreenHeader large transparent titleStyle={typography.headerMedium} title="Subscription" onBack={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.planCard}>
-          <HexPattern topColor="#FFD600" width={170} height={208} clip />
+        <TouchableOpacity
+          style={styles.planCard}
+          activeOpacity={0.85}
+          onPress={() => navigation.navigate('PlanDetails')}
+          accessibilityRole="button"
+          accessibilityLabel="View plan details"
+        >
           <View style={styles.planTop}>
             <View style={styles.flex}>
               <Text style={styles.overline}>CURRENT PLAN</Text>
@@ -59,19 +65,19 @@ export default function SubscriptionScreen({ navigation }) {
           </View>
           <View style={styles.priceRow}>
             <Text style={styles.price}>{subscription.price}</Text>
-            <Text style={styles.period}> / {subscription.period}</Text>
+            <Text style={styles.period}> /{subscription.period}</Text>
           </View>
           <View style={styles.planDivider} />
           <View style={styles.renewRow}>
             <Text style={styles.renewLabel}>Renews automatically on</Text>
             <Text style={styles.renewDate}>{subscription.renewsOn}</Text>
           </View>
-        </View>
+        </TouchableOpacity>
 
         <SettingsCard radiusSize={radius.xl} style={styles.invoiceCard}>
           <View style={[styles.invoiceHeader, styles.rowBorder]}>
             <Image source={billIcon} style={styles.icon} tintColor={colors.navyText} />
-            <Text style={styles.invoiceHeading}>Recent Invoices</Text>
+            <Text style={styles.invoiceHeading}>Recent invoices</Text>
             <Text style={styles.receiptCount}>{subscription.invoices.length} receipts</Text>
           </View>
           {subscription.invoices.slice(0, 3).map((invoice, index, list) => (
@@ -81,7 +87,7 @@ export default function SubscriptionScreen({ navigation }) {
       </ScrollView>
 
       <View style={styles.footer}>
-        <Button title="Renew Plan" variant="navy" pill onPress={() => navigation.navigate('PlanDetails')} style={styles.button} textStyle={styles.buttonText} />
+        <Button title="Renew Plan" variant={canRenew ? 'primary' : 'softGray'} disabled={!canRenew} pill onPress={() => navigation.navigate('PlanDetails')} style={styles.button} textStyle={styles.buttonText} />
       </View>
     </View>
   );
@@ -139,7 +145,7 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.bold,
     fontSize: 30,
     lineHeight: 38,
-    color: colors.white,
+    color: colors.connectedBright,
   },
   period: {
     fontFamily: fontFamily.regular,

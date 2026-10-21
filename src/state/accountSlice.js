@@ -43,14 +43,11 @@ const initialState = {
     ],
     lastExport: null,
   },
-  deactivation: {
-    archiveOption: null,
-  },
   subscription: {
     planName: 'Premium Pro',
     price: '₹2,499',
     period: 'year',
-    renewsOn: 'Nov 12, 2024',
+    renewsOn: 'Dec 12, 2026',
     invoices: [
       { id: 'INV-2025-541', title: 'Pro Yearly', date: 'Oct 12, 2025', amount: '₹2,499', status: 'Paid' },
       { id: 'INV-2024-231', title: 'Pro Yearly', date: 'Oct 12, 2024', amount: '₹2,499', status: 'Paid' },
@@ -61,16 +58,16 @@ const initialState = {
       name: 'Pro yearly',
       price: '₹2,499',
       period: 'year',
+      badge: 'Best value',
       perMonth: '₹208',
       savePercent: 30,
-      yearlySaving: '₹1,089',
       benefits: [
-        'Unlimited premium mood & health tracking',
-        'Complete analytics history & personalized insights',
-        'Access to exclusive virtual community events',
-        'Priority 24/7 customer support',
-        'Zero ads or watermarks on exports',
-        'Verified secure payments & data encryption',
+        { title: 'Mood & wellness', description: 'Track your wellbeing without limits' },
+        { title: 'Personal insights', description: 'Discover more about yourself daily' },
+        { title: 'Exclusive events', description: 'Enjoy special SuperBae community events' },
+        { title: 'Priority support', description: 'Extra care whenever you need' },
+        { title: 'Ad-free experience', description: 'No ads, just your space' },
+        { title: 'Privacy & security', description: 'Your data stays safely protected' },
       ],
     },
   },
@@ -105,9 +102,6 @@ const accountSlice = createSlice({
     setExportFormat(state, action) {
       state.dataExport.format = action.payload;
     },
-    setExportCategories(state, action) {
-      state.dataExport.categories = { ...state.dataExport.categories, ...action.payload };
-    },
     toggleExportCategory(state, action) {
       const key = action.payload;
       state.dataExport.categories[key] = !state.dataExport.categories[key];
@@ -124,18 +118,6 @@ const accountSlice = createSlice({
         expired: false,
       });
     },
-    renewPlan(state, action) {
-      const { renewsOn, invoiceId, date } = action.payload;
-      const { offer } = state.subscription;
-      state.subscription.planName = offer.name.replace(/^\w/, (c) => c.toUpperCase());
-      state.subscription.price = offer.price;
-      state.subscription.period = offer.period;
-      state.subscription.renewsOn = renewsOn;
-      state.subscription.invoices.unshift({ id: invoiceId, title: 'Pro Yearly', date, amount: offer.price, status: 'Paid' });
-    },
-    setArchiveOption(state, action) {
-      state.deactivation.archiveOption = action.payload;
-    },
   },
 });
 
@@ -147,9 +129,6 @@ export const {
   toggleRestoreOption,
   setExportFormat,
   toggleExportCategory,
-  setExportCategories,
   completeExport,
-  renewPlan,
-  setArchiveOption,
 } = accountSlice.actions;
 export default accountSlice.reducer;

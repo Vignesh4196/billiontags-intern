@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import BackArrowIcon from './icons/BackArrowIcon';
 import { colors, spacing, typography, fontFamily } from '../theme';
 
-export default function ScreenHeader({ title, subtitle, onBack, rightIconName, onRightPress, large = false, transparent = false, titleStyle }) {
+export default function ScreenHeader({ title, subtitle, onBack, rightIconName, rightElement, onRightPress, large = false, transparent = false, titleStyle }) {
   const isLarge = large || !!subtitle;
 
   return (
@@ -18,16 +18,20 @@ export default function ScreenHeader({ title, subtitle, onBack, rightIconName, o
         {!!subtitle && <Text style={styles.subtitle} numberOfLines={1}>{subtitle}</Text>}
       </View>
 
-      <TouchableOpacity
-        style={[styles.side, isLarge && styles.sideLarge]}
-        onPress={onRightPress}
-        hitSlop={12}
-        disabled={!rightIconName}
-      >
-        {!!rightIconName && (
-          <Ionicons name={rightIconName} size={24} color={colors.textPrimary} />
-        )}
-      </TouchableOpacity>
+      {rightElement ? (
+        <View style={styles.rightElement}>{rightElement}</View>
+      ) : (
+        <TouchableOpacity
+          style={[styles.side, isLarge && styles.sideLarge]}
+          onPress={onRightPress}
+          hitSlop={12}
+          disabled={!rightIconName}
+        >
+          {!!rightIconName && (
+            <Ionicons name={rightIconName} size={24} color={colors.textPrimary} />
+          )}
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -59,6 +63,12 @@ const styles = StyleSheet.create({
   sideLarge: {
     width: 40,
     height: 40,
+  },
+  rightElement: {
+    width: 32,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    overflow: 'visible',
   },
   titleBlock: {
     flex: 1,

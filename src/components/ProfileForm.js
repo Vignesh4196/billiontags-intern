@@ -9,12 +9,10 @@ import Chip from './Chip';
 import PickerField from './PickerField';
 import SelectField from './SelectField';
 import OptionSheet from './OptionSheet';
-import PartnerBanner from './PartnerBanner';
 import Button from './Button';
+import Popup from './Popup';
 import { parseDobToDate, parseTimeTo24, formatDateToDob, formatTimeTo12h } from '../utils/dateFormat';
 import { colors, spacing, radius, typography, fontFamily } from '../theme';
-
-const BIO_MAX_LENGTH = 300;
 
 const interestIcons = {
   Music: 'musical-notes-outline',
@@ -29,30 +27,25 @@ const interestIcons = {
   Gaming: 'game-controller-outline',
 };
 
-// connection: { connected, partnerName, sinceLabel, onInvite } shows the
-// "Connected with …" banner when connected, otherwise "Invite Your Partner".
-// handle / subtitle: grey line under the name. showHeaderSave: ✓ in the header.
-// options: profileOptions from the slice; when set, the extended fields
-// (nationality, state/district, zodiac, languages) are shown.
-export default function ProfileForm({ headerTitle, avatarSource, profile, handle, subtitle, showHeaderSave = false, connection, options, onSave, onBack }) {
+// My profile edit form. handle: grey line under the name. options: profileOptions from the slice.
+export default function ProfileForm({ headerTitle, avatarSource, profile, handle, options, onSave, onBack }) {
   const insets = useSafeAreaInsets();
-  const showExtended = !!options;
 
   const [fullName, setFullName] = React.useState(profile.fullName);
   const [phone, setPhone] = React.useState(profile.phone);
-  const [email, setEmail] = React.useState(profile.email);
-  const [bio, setBio] = React.useState(profile.bio);
   const [dateOfBirth, setDateOfBirth] = React.useState(() => parseDobToDate(profile.dateOfBirth));
   const [birthTime, setBirthTime] = React.useState(() => parseTimeTo24(profile.birthTime));
   const [nationality, setNationality] = React.useState(profile.nationality);
   const [state, setState] = React.useState(profile.state);
   const [district, setDistrict] = React.useState(profile.district);
+  const [birthPlace, setBirthPlace] = React.useState(profile.birthPlace);
   const [zodiacSign, setZodiacSign] = React.useState(profile.zodiacSign);
   const [languages, setLanguages] = React.useState(profile.languages || []);
   const [interests, setInterests] = React.useState(profile.interests || []);
   const [addSheet, setAddSheet] = React.useState(null);
   const [avatarUri, setAvatarUri] = React.useState(profile.avatarUri || null);
   const [previewVisible, setPreviewVisible] = React.useState(false);
+  const [confirmVisible, setConfirmVisible] = React.useState(false);
   const uploadRef = React.useRef(null);
 
   const districtsByState = options?.districtsByState || {};
@@ -109,14 +102,46 @@ export default function ProfileForm({ headerTitle, avatarSource, profile, handle
     onSave({
       fullName,
       phone,
-      email,
-      bio,
       dateOfBirth: formatDateToDob(dateOfBirth),
       birthTime: formatTimeTo12h(birthTime),
       avatarUri,
       interests,
-      ...(showExtended && { nationality, state, district, zodiacSign, languages }),
+      nationality,
+      state,
+      district,
+      birthPlace,
+      zodiacSign,
+      languages,
     });
+  };
+
+  // True once any field differs from what the screen opened with.
+  const hasChanges = fullName !== profile.fullName
+    || phone !== profile.phone
+    || formatDateToDob(dateOfBirth) !== profile.dateOfBirth
+    || formatTimeTo12h(birthTime) !== profile.birthTime
+    || avatarUri !== (profile.avatarUri || null)
+    || JSON.stringify(interests) !== JSON.stringify(profile.interests || [])
+    || nationality !== profile.nationality
+    || state !== profile.state
+    || district !== profile.district
+    || birthPlace !== profile.birthPlace
+    || zodiacSign !== profile.zodiacSign
+    || JSON.stringify(languages) !== JSON.stringify(profile.languages || []);
+
+  const handleBack = () => {
+    if (hasChanges) setConfirmVisible(true);
+    else onBack();
+  };
+
+  const discardChanges = () => {
+    setConfirmVisible(false);
+    onBack();
+  };
+
+  const saveChanges = () => {
+    setConfirmVisible(false);
+    handleSave();
   };
 
   const addSheetOptions = addSheet === 'languages'
@@ -136,9 +161,7 @@ export default function ProfileForm({ headerTitle, avatarSource, profile, handle
       <ScreenHeader
         large
         title={headerTitle}
-        onBack={onBack}
-        rightIconName={showHeaderSave ? 'checkmark' : undefined}
-        onRightPress={handleSave}
+        onBack={handleBack}
       />
 
       <ScrollView
@@ -174,41 +197,25 @@ export default function ProfileForm({ headerTitle, avatarSource, profile, handle
             />
           )}
           <Text style={styles.name}>{profile.displayName}</Text>
-          {!!(handle || subtitle) && <Text style={styles.handle}>{handle || subtitle}</Text>}
+          {!!handle && <Text style={styles.handle}>{handle}</Text>}
         </View>
 
-        {!!connection && (connection.connected ? (
-          <PartnerBanner
-            tone="pink"
-            compactSubtitle
-            title={`Connected with ${connection.partnerName}`}
-            subtitle={`Syncing memories since ${connection.sinceLabel}`}
-            badgeLabel="Active"
-          />
-        ) : (
-          <PartnerBanner
-            title="Invite Your Partner"
-            subtitle="Welcome them in and make this space feel a little more like yours together."
-            badgeLabel="Invite"
-            onBadgePress={connection.onInvite}
-          />
-        ))}
-
-        <Input label="Full name" value={fullName} onChangeText={setFullName} />
+        <Input large label="My name" value={fullName} onChangeText={setFullName} />
 
         <View style={styles.row}>
           <PickerField
+            large
             label="Date of birth"
             mode="date"
             iconName="calendar-month-outline"
             iconSet="material"
-            iconColor={colors.textPrimary}
             value={dateOfBirth}
             onChange={setDateOfBirth}
             maximumDate={new Date()}
             style={styles.halfField}
           />
           <PickerField
+            large
             label="Birth time"
             mode="time"
             iconName="time-outline"
@@ -218,24 +225,14 @@ export default function ProfileForm({ headerTitle, avatarSource, profile, handle
           />
         </View>
 
-        <Input label="Phone" value={phone} onChangeText={setPhone} iconName="call-outline" keyboardType="phone-pad" />
+        <Input large label="Phone" value={phone} onChangeText={setPhone} iconName="call-outline" keyboardType="phone-pad" />
 
-        <Input
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
-          iconName="mail-outline"
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-
-        {showExtended && (
-          <>
-            <SelectField label="Nationality" value={nationality} options={options.nationalities} onChange={setNationality} />
+        <>
+            <SelectField large label="Nationality" value={nationality} options={options.nationalities} onChange={setNationality} />
 
             <View style={styles.row}>
               <SelectField
-                small
+                large
                 label="State"
                 value={state}
                 options={Object.keys(districtsByState)}
@@ -243,7 +240,7 @@ export default function ProfileForm({ headerTitle, avatarSource, profile, handle
                 style={styles.halfField}
               />
               <SelectField
-                small
+                large
                 label="District"
                 value={district}
                 options={districtsByState[state] || []}
@@ -252,28 +249,27 @@ export default function ProfileForm({ headerTitle, avatarSource, profile, handle
               />
             </View>
 
-            <SelectField small label="Zodiac Sign" value={zodiacSign} options={options.zodiacSigns} onChange={setZodiacSign} />
+            <Input large label="Birth place" value={birthPlace} onChangeText={setBirthPlace} />
+
+            <SelectField large label="Zodiac Sign" value={zodiacSign} options={options.zodiacSigns} onChange={setZodiacSign} />
 
             <View>
               <Text style={fieldStyles.label}>Languages</Text>
               <View style={styles.chipRow}>
                 {languages.map((language) => (
-                  <Chip key={language} label={language} variant="outline" />
+                  <Chip key={language} label={language} variant="outline" onRemove={() => setLanguages((current) => current.filter((item) => item !== language))} />
                 ))}
                 <Chip label="Add" iconName="add" variant="filled" onPress={() => setAddSheet('languages')} />
               </View>
             </View>
-          </>
-        )}
-
-        <Input label="Bio" value={bio} onChangeText={setBio} multiline maxLength={BIO_MAX_LENGTH} />
+        </>
 
         <View>
           <Text style={fieldStyles.label}>Interest</Text>
           <View style={styles.chipRow}>
             <Chip label="Add" iconName="add" variant="filled" onPress={() => setAddSheet('interests')} />
             {interests.map((interest) => (
-              <Chip key={interest} label={interest} iconName={interestIcons[interest] || 'heart-outline'} variant="muted" />
+              <Chip key={interest} label={interest} iconName={interestIcons[interest] || 'heart-outline'} variant="muted" onRemove={() => setInterests((current) => current.filter((item) => item !== interest))} />
             ))}
           </View>
         </View>
@@ -290,6 +286,15 @@ export default function ProfileForm({ headerTitle, avatarSource, profile, handle
         onSelect={addFromSheet}
         onClose={() => setAddSheet(null)}
       />
+
+      <Popup visible={confirmVisible} onClose={() => setConfirmVisible(false)}>
+        <Text style={styles.confirmTitle}>Confirmation</Text>
+        <Text style={styles.confirmMessage}>You need to save your changes before moving onto your next action.</Text>
+        <View style={styles.confirmActions}>
+          <Button title="Discard" variant="outline" pill onPress={discardChanges} style={styles.confirmButton} textStyle={styles.confirmText} />
+          <Button title="Save changes" pill onPress={saveChanges} style={styles.confirmButton} textStyle={styles.confirmText} />
+        </View>
+      </Popup>
 
       <Modal visible={previewVisible} transparent animationType="fade" onRequestClose={() => setPreviewVisible(false)}>
         <Pressable style={styles.previewBackdrop} onPress={() => setPreviewVisible(false)}>
@@ -315,7 +320,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     paddingTop: 11,
     paddingBottom: spacing.xxl,
-    gap: spacing.lg,
+    gap: spacing.xl,
   },
   avatarSection: {
     alignItems: 'center',
@@ -381,6 +386,33 @@ const styles = StyleSheet.create({
   },
   saveText: {
     fontSize: 18,
+  },
+  confirmTitle: {
+    ...typography.heading3,
+    fontFamily: fontFamily.semiBold,
+    fontSize: 20,
+    lineHeight: 26,
+    color: colors.textPrimary,
+  },
+  confirmMessage: {
+    fontFamily: fontFamily.medium,
+    fontSize: 16,
+    lineHeight: 23,
+    color: colors.textPrimary,
+    marginTop: spacing.lg,
+  },
+  confirmActions: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginTop: spacing.xl,
+  },
+  confirmButton: {
+    flex: 1,
+    width: undefined,
+    height: 56,
+  },
+  confirmText: {
+    fontSize: 16,
   },
   previewBackdrop: {
     flex: 1,

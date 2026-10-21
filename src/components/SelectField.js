@@ -1,25 +1,25 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import OptionSheet from './OptionSheet';
 import { fieldStyles } from './Input';
 import { colors } from '../theme';
 
-export default function SelectField({ label, value, options, onChange, small = false, style }) {
+export default function SelectField({ label, value, options, onChange, large = false, style }) {
   const [open, setOpen] = React.useState(false);
 
   return (
     <View style={style}>
-      {!!label && <Text style={fieldStyles.label}>{label}</Text>}
+      {!!label && <Text style={[fieldStyles.label, large && fieldStyles.labelLarge]}>{label}</Text>}
       <TouchableOpacity
-        style={fieldStyles.field}
+        style={[fieldStyles.field, large && fieldStyles.fieldLarge]}
         activeOpacity={0.7}
         onPress={() => setOpen(true)}
         accessibilityRole="button"
         accessibilityLabel={`${label}: ${value}`}
       >
-        <Text style={[fieldStyles.value, small && styles.valueSmall]} numberOfLines={1}>{value}</Text>
-        <Ionicons name="chevron-down" size={18} color={colors.fieldLabel} />
+        <Text style={[fieldStyles.value, large && fieldStyles.valueLarge]} numberOfLines={1}>{value}</Text>
+        <Ionicons name="chevron-down" size={large ? 20 : 18} color={colors.fieldLabel} />
       </TouchableOpacity>
 
       <OptionSheet
@@ -36,9 +36,3 @@ export default function SelectField({ label, value, options, onChange, small = f
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  valueSmall: {
-    fontSize: 14,
-  },
-});

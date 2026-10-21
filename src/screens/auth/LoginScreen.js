@@ -4,13 +4,10 @@ import LogoSuperbae from '../../components/icons/LogoSuperbae';
 import Button from '../../components/Button';
 import { colors, spacing, radius, fontFamily } from '../../theme';
 
-// Placeholder until the auth module is designed/built. Account deletion,
-// workspace deactivation and logout reset the stack to this screen.
+// Placeholder until the auth module is designed/built. Logout resets the stack to this screen.
 export default function LoginScreen({ navigation, route }) {
   const reason = route?.params?.reason;
   const message = {
-    deleted: 'Your account has been deleted.',
-    deactivated: 'Your workspace is deactivated. Sign in within 30 days to restore it.',
     loggedOut: 'You have been signed out.',
   }[reason];
 

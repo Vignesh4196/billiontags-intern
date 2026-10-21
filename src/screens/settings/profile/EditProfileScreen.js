@@ -3,15 +3,12 @@ import { useSelector, useDispatch } from 'react-redux';
 import ProfileForm from '../../../components/ProfileForm';
 import { setMyProfile } from '../../../state/settingsSlice';
 import { settingsService } from '../../../services';
-import { formatConnectedSince } from '../../../utils/dateFormat';
 
 const avatarSaara = require('../../../assets/images/avatar-saara.png');
 
-export default function MyProfileScreen({ navigation }) {
+export default function EditProfileScreen({ navigation }) {
   const myProfile = useSelector((state) => state.settings.myProfile);
-  const profile = useSelector((state) => state.settings.profile);
   const profileOptions = useSelector((state) => state.settings.profileOptions);
-  const partnerConnected = useSelector((state) => state.settings.partnerConnection.connected);
   const dispatch = useDispatch();
 
   const handleSave = async (fields) => {
@@ -26,12 +23,6 @@ export default function MyProfileScreen({ navigation }) {
       avatarSource={avatarSaara}
       profile={myProfile}
       handle={myProfile.handle}
-      connection={{
-        connected: partnerConnected,
-        partnerName: profile.partner.name,
-        sinceLabel: formatConnectedSince(profile.connectedAt),
-        onInvite: () => navigation.navigate('InvitePartner'),
-      }}
       options={profileOptions}
       onSave={handleSave}
       onBack={() => navigation.goBack()}

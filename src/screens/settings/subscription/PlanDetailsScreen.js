@@ -1,31 +1,31 @@
 import React from 'react';
-import { View, Text, Image, ScrollView, StyleSheet } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useSelector, useDispatch } from 'react-redux';
+import { View, Text, Image, ScrollView, Linking, Alert, StyleSheet } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useSelector } from 'react-redux';
 import ScreenHeader from '../../../components/ScreenHeader';
 import SettingsCard from '../../../components/SettingsCard';
-import HexPattern from '../../../components/HexPattern';
 import Button from '../../../components/Button';
+import FadeInView from '../../../components/FadeInView';
 import { subscriptionService } from '../../../services';
-import { renewPlan } from '../../../state/accountSlice';
-import { formatShortDate } from '../../../utils/dateFormat';
-import { colors, spacing, radius, fontFamily, typography, shadow } from '../../../theme';
+import { daysUntil, RENEW_WINDOW_DAYS } from '../../../utils/dateFormat';
+import { colors, spacing, radius, fontFamily, typography } from '../../../theme';
 
-const walletIcon = require('../../../assets/icons/wallet-icon.png');
+const crownIcon = require('../../../assets/icons/crown-icon.png');
+const checkIcon = require('../../../assets/icons/perk-check-icon.png');
 
+// "My pro plan": plan summary, perks and terms. Renew opens the hosted payment page.
 export default function PlanDetailsScreen({ navigation }) {
-  const offer = useSelector((state) => state.account.subscription.offer);
-  const dispatch = useDispatch();
+  const { offer, renewsOn } = useSelector((state) => state.account.subscription);
+  const canRenew = daysUntil(renewsOn) <= RENEW_WINDOW_DAYS;
   const [loading, setLoading] = React.useState(false);
 
   const renew = async () => {
     setLoading(true);
     try {
-      await subscriptionService.renewPlan(offer.id);
-      const now = new Date();
-      const nextYear = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
-      dispatch(renewPlan({ renewsOn: formatShortDate(nextYear), date: formatShortDate(now), invoiceId: `INV-${now.getFullYear()}-${String(now.getTime()).slice(-3)}` }));
-      navigation.popTo('Subscription');
+      const { url } = await subscriptionService.getCheckoutUrl(offer.id);
+      await Linking.openURL(url);
+    } catch (error) {
+      Alert.alert('Payment unavailable', "We couldn't open the payment page. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -33,67 +33,69 @@ export default function PlanDetailsScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <ScreenHeader large transparent titleStyle={typography.headerMedium} title="Plan details" onBack={() => navigation.goBack()} />
+      <ScreenHeader large transparent titleStyle={typography.headerMedium} title="My pro plan" onBack={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <SettingsCard radiusSize={radius.xl} style={styles.planCard}>
-          <HexPattern topColor="#22C55E" bottomColor="#86EFAC" width={230} height={300} top={-6} />
-          <View style={styles.planHeader}>
-            <Text style={styles.planName}>{offer.name}</Text>
-            <View style={[styles.chip, styles.chipGreen]}>
-              <Text style={[styles.chipText, { color: colors.chipGreen }]}>Recommended</Text>
-            </View>
-            <View style={styles.flex} />
-            <View style={[styles.chip, styles.chipBlue]}>
-              <Text style={[styles.chipText, { color: colors.chipBlue }]}>Save {offer.savePercent}%</Text>
-            </View>
-          </View>
-          <View style={styles.divider} />
-          <View style={styles.priceRow}>
-            <Text style={styles.price}>{offer.price}</Text>
-            <Text style={styles.period}> / {offer.period}</Text>
-          </View>
-          <Text style={styles.equivalent}>
-            Equivalent to just <Text style={styles.bold}>{offer.perMonth} / month</Text> (billed annually)
-          </Text>
-          <View style={styles.saveBox}>
-            <MaterialCommunityIcons name="creation" size={18} color={colors.chipBlue} />
-            <Text style={styles.saveText}>
-              You save <Text style={styles.boldDark}>{offer.yearlySaving} / year</Text> compared to the monthly rolling subscription.
-            </Text>
-          </View>
-        </SettingsCard>
-
-        <SettingsCard radiusSize={radius.xl} style={styles.benefitsCard}>
-          <Text style={styles.benefitsTitle}>Comprehensive Pro benefits</Text>
-          {offer.benefits.map((benefit, index) => {
-            const isLast = index === offer.benefits.length - 1;
-            return (
-              <View key={benefit} style={styles.benefitRow}>
-                {isLast ? (
-                  <MaterialCommunityIcons name="check-decagram-outline" size={22} color={colors.toggleOn} />
-                ) : (
-                  <Ionicons name="checkmark" size={22} color={colors.toggleOn} />
-                )}
-                <Text style={styles.benefitText}>{benefit}</Text>
+        <FadeInView>
+          <SettingsCard radiusSize={radius.xl} style={styles.planCard}>
+            <View style={styles.planHeader}>
+              <Text style={styles.planName}>{offer.name}</Text>
+              <View style={[styles.chip, styles.chipOrange]}>
+                <Text style={[styles.chipText, { color: colors.warning }]}>{offer.badge}</Text>
               </View>
-            );
-          })}
-        </SettingsCard>
+              <View style={styles.flex} />
+              <View style={[styles.chip, styles.chipBlue]}>
+                <Text style={[styles.chipText, { color: colors.chipBlue }]}>Save {offer.savePercent}%</Text>
+              </View>
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.priceRow}>
+              <Text style={styles.price}>{offer.price}</Text>
+              <Text style={styles.period}> /{offer.period}</Text>
+            </View>
+            <Text style={styles.equivalent}>Just {offer.perMonth}/month, billed yearly</Text>
+          </SettingsCard>
+        </FadeInView>
 
-        <SettingsCard radiusSize={radius.lg} style={styles.termsCard}>
-          <View style={styles.termsHeader}>
-            <Image source={walletIcon} style={styles.icon} tintColor={colors.textPrimary} />
-            <Text style={styles.termsTitle}>Subscription terms</Text>
-          </View>
-          <Text style={styles.termsText}>
-            Your membership auto-renews at {offer.price}/{offer.period}. Cancel anytime in account settings at least 24 hours before your billing cycle ends to avoid auto-charges.
-          </Text>
-        </SettingsCard>
+        <FadeInView delay={120}>
+          <SettingsCard radiusSize={radius.xl} style={styles.perksCard}>
+            <Text style={styles.perksTitle}>Your pro perks</Text>
+            {offer.benefits.map((benefit, index) => {
+              const isLast = index === offer.benefits.length - 1;
+              return (
+                <View key={benefit.title} style={styles.perkRow}>
+                  <View style={styles.perkIcon}>
+                    {isLast ? (
+                      <MaterialCommunityIcons name="check-decagram-outline" size={24} color={colors.connectedBright} />
+                    ) : (
+                      <Image source={checkIcon} style={styles.check} />
+                    )}
+                  </View>
+                  <View style={styles.flex}>
+                    <Text style={styles.perkTitle}>{benefit.title}</Text>
+                    <Text style={styles.perkText}>{benefit.description}</Text>
+                  </View>
+                </View>
+              );
+            })}
+          </SettingsCard>
+        </FadeInView>
+
+        <FadeInView delay={240}>
+          <SettingsCard radiusSize={radius.lg} style={styles.termsCard}>
+            <View style={styles.termsHeader}>
+              <Image source={crownIcon} style={styles.crown} tintColor={colors.textPrimary} />
+              <Text style={styles.termsTitle}>Subscription details</Text>
+            </View>
+            <Text style={styles.termsText}>
+              Your plan renews automatically at {offer.price}/{offer.period}. To cancel your subscription, please contact our customer support helpline before your next renewal.
+            </Text>
+          </SettingsCard>
+        </FadeInView>
       </ScrollView>
 
       <View style={styles.footer}>
-        <Button title="Renew Plan" variant="navy" pill loading={loading} onPress={renew} style={styles.button} textStyle={styles.buttonText} />
+        <Button title="Renew plan" variant={canRenew ? 'primary' : 'softGray'} disabled={!canRenew} pill loading={loading} onPress={renew} style={styles.button} textStyle={styles.buttonText} />
       </View>
     </View>
   );
@@ -102,25 +104,21 @@ export default function PlanDetailsScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.surfaceCool,
+    backgroundColor: colors.surfaceMuted,
   },
   content: {
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.xl,
     paddingTop: 2,
     paddingBottom: 24,
+    gap: 22,
   },
   flex: {
     flex: 1,
   },
-  icon: {
-    width: 24,
-    height: 24,
-  },
   planCard: {
     paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 18,
-    overflow: 'hidden',
+    paddingTop: 22,
+    paddingBottom: 20,
   },
   planHeader: {
     flexDirection: 'row',
@@ -138,8 +136,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
-  chipGreen: {
-    backgroundColor: colors.successSoftBackground,
+  chipOrange: {
+    backgroundColor: colors.warningSoft,
   },
   chipBlue: {
     backgroundColor: colors.chipBlueBackground,
@@ -156,7 +154,7 @@ const styles = StyleSheet.create({
   priceRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    marginTop: 18,
+    marginTop: 16,
   },
   price: {
     fontFamily: fontFamily.bold,
@@ -171,66 +169,50 @@ const styles = StyleSheet.create({
   },
   equivalent: {
     fontFamily: fontFamily.regular,
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 20,
     color: colors.fieldLabel,
     marginTop: 6,
   },
-  bold: {
-    fontFamily: fontFamily.bold,
-    color: colors.textPrimary,
+  perksCard: {
+    paddingHorizontal: 24,
+    paddingTop: 22,
+    paddingBottom: 16,
   },
-  saveBox: {
+  perksTitle: {
+    fontFamily: fontFamily.medium,
+    fontSize: 13,
+    lineHeight: 17,
+    color: colors.fieldLabel,
+    marginBottom: 10,
+  },
+  perkRow: {
     flexDirection: 'row',
-    gap: 10,
-    borderRadius: radius.sm,
-    backgroundColor: colors.white,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    marginTop: 14,
-    marginLeft: 12,
-    ...shadow.cardSoft,
+    alignItems: 'center',
+    gap: 14,
+    paddingVertical: 8,
   },
-  saveText: {
-    flex: 1,
+  perkIcon: {
+    width: 24,
+    alignItems: 'center',
+  },
+  check: {
+    width: 20,
+    height: 20,
+  },
+  perkTitle: {
+    fontFamily: fontFamily.semiBold,
+    fontSize: 15,
+    lineHeight: 20,
+    color: colors.navyText,
+  },
+  perkText: {
     fontFamily: fontFamily.regular,
     fontSize: 13,
     lineHeight: 17,
     color: colors.fieldLabel,
   },
-  boldDark: {
-    fontFamily: fontFamily.semiBold,
-    color: colors.textPrimary,
-  },
-  benefitsCard: {
-    marginTop: 22,
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 18,
-  },
-  benefitsTitle: {
-    fontFamily: fontFamily.semiBold,
-    fontSize: 12,
-    lineHeight: 16,
-    letterSpacing: 0.8,
-    color: colors.fieldLabel,
-    marginBottom: 12,
-  },
-  benefitRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    paddingVertical: 7,
-  },
-  benefitText: {
-    flex: 1,
-    fontFamily: fontFamily.regular,
-    fontSize: 14,
-    lineHeight: 20,
-    color: colors.textStrong,
-  },
   termsCard: {
-    marginTop: 22,
     paddingHorizontal: 16,
     paddingVertical: 16,
     shadowOpacity: 0,
@@ -240,6 +222,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+  },
+  crown: {
+    width: 24,
+    height: 24,
   },
   termsTitle: {
     fontFamily: fontFamily.semiBold,
@@ -254,9 +240,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   footer: {
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.xl,
     paddingBottom: 26,
-    backgroundColor: colors.surfaceCool,
   },
   button: {
     height: 64,

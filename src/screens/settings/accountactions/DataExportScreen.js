@@ -45,10 +45,10 @@ export default function DataExportScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <ScreenHeader large transparent title="Data Export" onBack={() => navigation.goBack()} />
+      <ScreenHeader large transparent title="Data export" onBack={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.sectionLabel}>Export Format</Text>
+        <Text style={styles.sectionLabel}>Choose your file format</Text>
         <View style={styles.segments}>
           {FORMATS.map((format) => {
             const selected = dataExport.format === format;
@@ -69,7 +69,7 @@ export default function DataExportScreen({ navigation }) {
           })}
         </View>
 
-        <Text style={[styles.sectionLabel, styles.sectionSpaced]}>Select Data Categories</Text>
+        <Text style={[styles.sectionLabel, styles.sectionSpaced]}>What would you like saved?</Text>
         <SettingsCard noPadding radiusSize={radius.lg} style={styles.listCard}>
           {EXPORT_CATEGORIES.map(({ key, title, description }, index) => (
             <TouchableOpacity

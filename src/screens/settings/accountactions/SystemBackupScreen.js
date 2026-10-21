@@ -12,9 +12,9 @@ import { backupService } from '../../../services';
 import { colors, spacing, radius, fontFamily } from '../../../theme';
 
 const FREQUENCIES = [
-  { key: 'daily', label: 'Daily Backup' },
-  { key: 'weekly', label: 'Weekly Backup' },
-  { key: 'monthly', label: 'Monthly Backup' },
+  { key: 'daily', label: 'Daily' },
+  { key: 'weekly', label: 'Weekly' },
+  { key: 'monthly', label: 'Monthly' },
 ];
 
 export default function SystemBackupScreen({ navigation }) {

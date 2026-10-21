@@ -12,7 +12,7 @@ import {
 } from '@expo-google-fonts/dm-sans';
 
 import { store } from './src/state/store';
-import SettingsNavigator from './src/navigation/SettingsNavigator';
+import RootNavigator from './src/navigation/RootNavigator';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -30,7 +30,7 @@ export default function App() {
     <Provider store={store}>
       <SafeAreaProvider>
         <NavigationContainer>
-          <SettingsNavigator />
+          <RootNavigator />
           <StatusBar style="dark" />
         </NavigationContainer>
       </SafeAreaProvider>

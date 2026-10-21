@@ -28,12 +28,12 @@ export default function PartnerSettingsScreen({ navigation }) {
   const connected = useSelector((state) => state.settings.partnerConnection.connected);
   const dispatch = useDispatch();
 
-  // This screen is connected-only. Main settings already opens Our space while disconnected, so this is
-  // only reached by going back (e.g. after the disconnect flow): swap it for Our space, the disconnected view.
+  // This screen is connected-only. Main settings already opens Invite partner while disconnected, so this is
+  // only reached by going back (e.g. after the disconnect flow): swap it for the Add partner screen.
   // Focus-based, so the disconnect flow (which turns `connected` off while this screen is underneath) is not interrupted.
   useFocusEffect(
     React.useCallback(() => {
-      if (!connected) navigation.replace('OurSpace');
+      if (!connected) navigation.replace('AddPartner');
     }, [connected, navigation]),
   );
 

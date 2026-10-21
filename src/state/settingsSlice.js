@@ -17,6 +17,7 @@ const initialState = {
     avatar: 'saara',
     displayName: 'Saara',
     handle: '@saara070102158',
+    signedUpAt: '2023-08-12',
     fullName: 'Divya',
     dateOfBirth: '29/05/2002',
     birthTime: '07:43 AM',
@@ -25,6 +26,8 @@ const initialState = {
     nationality: 'Indian',
     state: 'Tamil Nadu',
     district: 'Madurai',
+    birthPlace: 'Madurai',
+    currentCity: 'Chennai, TN',
     zodiacSign: 'Aquarius',
     languages: ['Tamil', 'English'],
     bio: 'I’m a simple, easy-going, and family-oriented person who enjoys spending time with my loved ones. I’m friendly, caring, and believe in keeping things positive and genuine. I enjoy trying new things, making good memories, and growing both personally and professionally.',
@@ -36,7 +39,8 @@ const initialState = {
     fullName: 'Arjun',
     dateOfBirth: '29/05/2002',
     birthTime: '07:43 AM',
-    phone: '+91 | 9876543210',
+    phoneCode: '+91',
+    phoneNumber: '9876543210',
     email: 'Arjun@Superbae.com',
     bio: 'I’m a simple, easy-going, and family-oriented person who enjoys spending time with my loved ones. I’m friendly, caring, and believe in keeping things positive and genuine. I enjoy trying new things, making good memories, and growing both personally and professionally.',
     interests: ['Music', 'Travel', 'Coffee', 'Photography', 'Books', 'Food'],
@@ -57,12 +61,6 @@ const initialState = {
   partnerConnection: {
     connected: true,
   },
-  notifications: {
-    pushAlerts: true,
-    smsAlerts: false,
-    marketingUpdates: false,
-    appUpdates: true,
-  },
   invite: {
     code: 'LOVE-987-SR',
     link: 'LOVE-987-SR.superbae.elite',
@@ -78,47 +76,28 @@ const initialState = {
     cycle: true,
     theme: true,
   },
-  shareApp: {
-    message: 'Join me on SuperBae, a private space for couples. https://superbae.app',
-  },
-  ourSpace: {
-    sharedMemories: true,
-    bucketList: true,
-    sharedCalendar: true,
-    sharedNotes: true,
-    themePersonalization: true,
-  },
-  language: {
-    current: 'English (US)',
-    region: 'United States (US)',
-  },
-  permissions: {
-    notifications: true,
-    location: true,
-    camera: true,
-    microphone: false,
-    contacts: false,
-  },
-  appLock: {
-    enabled: true,
-    authMethod: 'Face ID + Passcode',
-    timing: 'Immediately',
-    requireAuth: 'Every time the app opens',
-  },
 };
 
 const settingsSlice = createSlice({
   name: 'settings',
   initialState,
   reducers: {
-    setProfile(state, action) {
-      state.profile = { ...state.profile, ...action.payload };
-    },
     setMyProfile(state, action) {
       state.myProfile = { ...state.myProfile, ...action.payload };
     },
-    setPartnerProfile(state, action) {
-      state.partnerProfile = { ...state.partnerProfile, ...action.payload };
+    // Edit partner profile: name, phone and the "Together since" date (connectedAt, ISO) are saved together.
+    updatePartnerDetails(state, action) {
+      const { name, phoneCode, phoneNumber, connectedAt, avatarUri } = action.payload;
+      state.profile.partner.name = name;
+      state.profile.connectedAt = connectedAt;
+      state.partnerProfile = {
+        ...state.partnerProfile,
+        displayName: name,
+        fullName: name,
+        phoneCode,
+        phoneNumber,
+        ...(avatarUri !== undefined && { avatarUri }),
+      };
     },
     setPartnerConnected: {
       reducer(state, action) {
@@ -132,61 +111,21 @@ const settingsSlice = createSlice({
         return { payload: { connected, at: new Date().toISOString() } };
       },
     },
-    toggleNotification(state, action) {
-      const key = action.payload;
-      state.notifications[key] = !state.notifications[key];
-    },
     togglePartnerFeature(state, action) {
       const key = action.payload;
       state.partnerFeatures[key] = !state.partnerFeatures[key];
     },
-    toggleOurSpaceSetting(state, action) {
-      const key = action.payload;
-      state.ourSpace[key] = !state.ourSpace[key];
-    },
-    setLanguage(state, action) {
-      state.language.current = action.payload;
-    },
     setInviteCode(state, action) {
       state.invite = { ...state.invite, ...action.payload };
-    },
-    setPermissions(state, action) {
-      state.permissions = { ...state.permissions, ...action.payload };
-    },
-    togglePermission(state, action) {
-      const key = action.payload;
-      state.permissions[key] = !state.permissions[key];
-    },
-    setAppLockEnabled(state, action) {
-      state.appLock.enabled = action.payload;
-    },
-    setAppLockAuthMethod(state, action) {
-      state.appLock.authMethod = action.payload;
-    },
-    setAppLockTiming(state, action) {
-      state.appLock.timing = action.payload;
-    },
-    setAppLockRequireAuth(state, action) {
-      state.appLock.requireAuth = action.payload;
     },
   },
 });
 
 export const {
-  setProfile,
   setMyProfile,
-  setPartnerProfile,
+  updatePartnerDetails,
   setPartnerConnected,
-  toggleNotification,
   togglePartnerFeature,
-  toggleOurSpaceSetting,
-  setLanguage,
-  togglePermission,
-  setPermissions,
   setInviteCode,
-  setAppLockEnabled,
-  setAppLockAuthMethod,
-  setAppLockTiming,
-  setAppLockRequireAuth,
 } = settingsSlice.actions;
 export default settingsSlice.reducer;
