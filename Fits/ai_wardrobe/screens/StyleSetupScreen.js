@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
@@ -7,7 +7,18 @@ import Button from '../../../src/components/Button';
 import Mascot from '../components/Mascot';
 import StepBadge from '../components/StepBadge';
 import OptionGrid from '../components/OptionGrid';
-import { occasions, moods, preferences, setOccasion, setMood } from '../state/aiWardrobeSlice';
+import PreferenceSheet from '../components/PreferenceSheet';
+import {
+  occasions,
+  moods,
+  preferences,
+  fitOptions,
+  colorOptions,
+  setOccasion,
+  setMood,
+  setFits,
+  setColorPrefs,
+} from '../state/aiWardrobeSlice';
 import { colors, fontFamily, radius, shadow, spacing } from '../theme';
 
 const TOTAL_STEPS = 3;
@@ -17,6 +28,9 @@ export default function StyleSetupScreen({ navigation }) {
   const dispatch = useDispatch();
   const occasion = useSelector((s) => s.aiWardrobe.occasion);
   const mood = useSelector((s) => s.aiWardrobe.mood);
+  const fits = useSelector((s) => s.aiWardrobe.fits);
+  const colorPrefs = useSelector((s) => s.aiWardrobe.colorPrefs);
+  const [sheet, setSheet] = useState(null); // 'fit' | 'color' | null
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
@@ -51,7 +65,7 @@ export default function StyleSetupScreen({ navigation }) {
             <TouchableOpacity
               key={p.id}
               style={styles.prefRow}
-              onPress={() => navigation.navigate('Placeholder', { title: p.label })}
+              onPress={() => setSheet(p.id)}
             >
               <Image source={p.icon} style={styles.prefIcon} resizeMode="contain" />
               <Text style={styles.prefLabel}>{p.label}</Text>
@@ -69,6 +83,31 @@ export default function StyleSetupScreen({ navigation }) {
           onPress={() => navigation.navigate('WardrobePicks')}
         />
       </View>
+
+      <PreferenceSheet
+        visible={sheet === 'fit'}
+        title="Look & Fit"
+        subtitle="How do you like your choice to fit?"
+        options={fitOptions}
+        selected={fits}
+        onClose={() => setSheet(null)}
+        onApply={(ids) => {
+          dispatch(setFits(ids));
+          setSheet(null);
+        }}
+      />
+      <PreferenceSheet
+        visible={sheet === 'color'}
+        title="Color preference"
+        subtitle="What colors do you love wearing?"
+        options={colorOptions}
+        selected={colorPrefs}
+        onClose={() => setSheet(null)}
+        onApply={(ids) => {
+          dispatch(setColorPrefs(ids));
+          setSheet(null);
+        }}
+      />
     </SafeAreaView>
   );
 }

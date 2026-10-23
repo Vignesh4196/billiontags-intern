@@ -27,7 +27,7 @@ src/
 - Reuse shared components and theme tokens; never hardcode colors or font sizes in screens.
 - Match Figma exactly: spacing, radius, shadows, font weights, icon sizes, text content.
 - Use placeholder navigation for screens in groups not built yet.
-- Keep dummy data in the Redux slice (no backend yet).
+- Keep dummy data in the Redux slice (no backend yet). 
 
 ## After finishing each group — STOP and report
 1. A table: Screen name | Figma link | File path | Status

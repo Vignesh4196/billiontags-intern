@@ -12,7 +12,7 @@ const Stack = createNativeStackNavigator();
 //   'Settings'   — the Settings module
 //   'AIWardrobe' — the Fits > AI Wardrobe ("Ara") flow
 //   'AddToWardrobe' — the Fits > Add items to wardrobe flow
-const INITIAL_MODULE = 'Settings'; // 'Settings' | 'AIWardrobe' | 'AddToWardrobe'
+const INITIAL_MODULE = 'AIWardrobe'; // 'Settings' | 'AIWardrobe' | 'AddToWardrobe'
 export default function RootNavigator() {
   return (
     <Stack.Navigator initialRouteName={INITIAL_MODULE} screenOptions={{ headerShown: false }}>

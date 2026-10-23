@@ -32,6 +32,26 @@ export const preferences = [
   { id: 'color', label: 'Color Harmony & Details', icon: require('../assets/pref-color.png') },
 ];
 
+// "Look & Fit" popup options. `none` is exclusive (clears the other picks).
+export const fitOptions = [
+  { id: 'regular', label: 'Regular', icon: require('../assets/fit-regular.png') },
+  { id: 'fitted', label: 'Fitted', icon: require('../assets/fit-fitted.png') },
+  { id: 'relaxed', label: 'Relaxed', icon: require('../assets/fit-relaxed.png') },
+  { id: 'oversized', label: 'Oversized', icon: require('../assets/fit-oversized.png') },
+  { id: 'flowy', label: 'flowy', icon: require('../assets/fit-flowy.png') },
+  { id: 'none', label: 'No Preference', icon: require('../assets/fit-none.png') },
+];
+
+// "Color preference" popup options. `none` is exclusive.
+export const colorOptions = [
+  { id: 'pastels', label: 'Pastels', icon: require('../assets/color-pastels.png') },
+  { id: 'neutral', label: 'Neutral', icon: require('../assets/color-neutral.png') },
+  { id: 'bright', label: 'Bright colors', icon: require('../assets/color-bright.png') },
+  { id: 'dark', label: 'Dark shades', icon: require('../assets/color-dark.png') },
+  { id: 'earth', label: 'Earth tones', icon: require('../assets/color-earth.png') },
+  { id: 'none', label: 'No preference', icon: require('../assets/color-none.png') },
+];
+
 // Step 2 — pieces picked from the user's wardrobe. Dummy for now: the AI will
 // return these from the backend (any number of items).
 export const wardrobePicks = [
@@ -53,6 +73,8 @@ export const outfitLooks = [
 const initialState = {
   occasion: 'office',
   mood: 'confident',
+  fits: [], // "Look & Fit" popup selections (none by default)
+  colorPrefs: [], // "Color preference" popup selections (none by default)
   picks: wardrobePicks,
   looks: outfitLooks,
   savedLooks: [], // ids saved with "Save"
@@ -68,6 +90,12 @@ const aiWardrobeSlice = createSlice({
     setMood(state, action) {
       state.mood = action.payload;
     },
+    setFits(state, action) {
+      state.fits = action.payload;
+    },
+    setColorPrefs(state, action) {
+      state.colorPrefs = action.payload;
+    },
     // replace with the looks the AI built (from the backend later)
     setLooks(state, action) {
       state.looks = action.payload;
@@ -82,5 +110,5 @@ const aiWardrobeSlice = createSlice({
   },
 });
 
-export const { setOccasion, setMood, setPicks, setLooks, saveLook } = aiWardrobeSlice.actions;
+export const { setOccasion, setMood, setFits, setColorPrefs, setPicks, setLooks, saveLook } = aiWardrobeSlice.actions;
 export default aiWardrobeSlice.reducer;
